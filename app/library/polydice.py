@@ -1,8 +1,8 @@
 import random
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 
-class ExplodingBehavior(Enum):
+class ExplodingBehavior(IntEnum):
     """
     Describes the behavior of dice that roll the maximum value. Maybe adding a new dice
     """
@@ -18,6 +18,13 @@ class DiceResult:
     sides: int
     dice_modifier: int
     result: int
+
+    @property
+    def value(self):
+        """
+        Returns the value of the dice roll, including any modifiers.
+        """
+        return self.dice_modifier + self.result
 
     @property
     def is_max(self):
@@ -46,10 +53,10 @@ class DicePoolResultSum(DicePoolResult):
         Returns the sum of all the dice rolls, including any modifiers.
         """
         return sum(
-            dice.dice_modifier + dice.result
+            dice.value
             for dice in self.dice_results
         ) + sum(
-            dice.dice_modifier + dice.result
+            dice.value
             for dice in self.extra_dice
         ) + self.pool_modifier
 
@@ -151,7 +158,7 @@ def roll_dice_successes(number:int=1, sides:int=6, high_exploding:ExplodingBehav
     """
     original_dice, extra_dice = roll_pool(number, sides, high_exploding, dice_modifier)
     all_dice = original_dice + extra_dice
-    successes = len([dice for dice in all_dice if dice.result+dice_modifier >= threshold])
+    successes = len([dice for dice in all_dice if dice.value >= threshold])
     if low_subtracion:
         successes -= len([dice for dice in all_dice if dice.result == 1])
     return DicePoolResultSuccesses(

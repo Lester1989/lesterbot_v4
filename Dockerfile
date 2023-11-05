@@ -16,6 +16,11 @@ RUN --mount=type=cache,target=$POETRY_CACHE_DIR poetry install --without dev,tes
 
 FROM python:3.11-slim-buster as runtime
 
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
