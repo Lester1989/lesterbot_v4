@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  dockerdiscordbot:
+    image: dockerdiscordbot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment: 
+      DISCORDTOKEN: YOUR_DISCORD_TOKEN_HERE

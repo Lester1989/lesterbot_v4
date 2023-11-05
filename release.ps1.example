@@ -1,0 +1,42 @@
+$gitstatus = git status --porcelain
+if (!(docker ps)) {
+    Write-Host "Docker engine is not running. Please start Docker engine and try again."
+    exit -1
+}
+if ($gitstatus) {
+    Write-Host "Please Commit and Push your local changes before running this script"
+    exit -1
+}
+$registry = "REGISTRY_URL"
+
+# Get the file path
+$filePath = "version.txt"
+
+
+poetry version patch
+# Get the current version number
+$newVersion = poetry version -s
+$projectName = (poetry version).Split(" ")[0]
+
+
+# Write the new version number to the file
+Set-Content $filePath $newVersion
+
+git add .
+git commit -m "Incremented version to $newVersion"
+git push
+git tag -n "Incremented version to $newVersion" "$newVersion"
+git push --tags
+
+
+$versionTag = $registry+$projectName + ":" +$newVersion
+$versionTagLatest = $registry+$projectName + ":latest"
+docker build --force-rm . -t $versionTag
+docker build --force-rm . -t $versionTagLatest
+
+docker push $versionTag
+docker push $versionTagLatest
+
+# Invoke-RestMethod -Uri $registry... -Method POST
+ 
+Write-Host "Stack rebuild triggered successfully!"

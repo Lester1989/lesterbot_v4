@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "lesterbot-v4"
+version = "0.1.0"
+description = ""
+authors = ["Lukas Jaspaert <l.ester@gmx.de>"]
+readme = "README.md"
+packages = [{include = "lesterbot_v4"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+discord-py-interactions = "^5.10.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.3"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
