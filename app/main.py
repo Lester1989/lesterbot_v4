@@ -34,5 +34,6 @@ if __name__ == "__main__":
     print("Version: ",pathlib.Path('version.txt').read_text(encoding='utf8'))
     bot.load_extension("exts.polydice")
     bot.load_extension("exts.werewolf_w20")
+    bot.load_extension("exts.nsc_gen")
     print("Loaded extensions")
     bot.start(os.environ.get("DISCORDTOKEN"))
