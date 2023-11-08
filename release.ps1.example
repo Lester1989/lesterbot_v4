@@ -1,3 +1,6 @@
+# if alembic creates a revision file the git status fails
+alembic revision --autogenerate -m "Should not exist"
+
 $gitstatus = git status --porcelain
 if (!(docker ps)) {
     Write-Host "Docker engine is not running. Please start Docker engine and try again."
