@@ -3,10 +3,10 @@ import os
 import pathlib
 from interactions import Client, Intents, listen
 from interactions import slash_command, SlashContext
+from config import SCOPE_KWARG
 
 bot = Client(intents=Intents.DEFAULT)
-TESTING_GUILDS = [int(guild_id) for guild_id in os.environ.get("TESTING_GUILD","").split(",") if guild_id] or None
-SCOPE_KWARG = {"scopes": TESTING_GUILDS} if TESTING_GUILDS else {}
+
 @listen()
 async def on_ready():
     """
@@ -33,5 +33,6 @@ if __name__ == "__main__":
     print("Starting bot")
     print("Version: ",pathlib.Path('version.txt').read_text(encoding='utf8'))
     bot.load_extension("exts.polydice")
+    bot.load_extension("exts.werewolf_w20")
     print("Loaded extensions")
     bot.start(os.environ.get("DISCORDTOKEN"))

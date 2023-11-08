@@ -28,5 +28,4 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY app ./app
 COPY version.txt ./version.txt
-
-ENTRYPOINT ["python", "app/main.py"]
+COPY alembic.ini ./alembic.ini

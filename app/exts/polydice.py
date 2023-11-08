@@ -1,55 +1,8 @@
-import os
+from config import SCOPE_KWARG
 from interactions import Embed, Extension, slash_command, slash_option, SlashContext, OptionType,SlashCommandChoice
-from library.polydice import DiceResult, roll_dice_successes, roll_dice_sum, ExplodingBehavior
+from library.polydice import DiceResult, roll_dice_successes, roll_dice_sum, ExplodingBehavior, format_dice_result, format_dice_success_result
 
-TESTING_GUILDS = [
-    int(guild_id) 
-    for guild_id in os.environ.get("TESTING_GUILD","").split(",") 
-    if guild_id
-] or None
-SCOPE_KWARG = {"scopes": TESTING_GUILDS} if TESTING_GUILDS else {}
 
-def format_dice_result(dice_result:DiceResult):
-    """
-    Formats a DiceResult object as a string
-
-    Args:
-        dice_result (DiceResult): The DiceResult object to format
-
-    Returns:
-        A string representing the DiceResult object
-    """
-    crit_md = "**" if dice_result.is_max else ""
-    if dice_result.dice_modifier > 0:
-        modifier = f"(+{dice_result.dice_modifier}) -> {crit_md}{dice_result.value}{crit_md}"
-    elif dice_result.dice_modifier < 0:
-        modifier = f"({dice_result.dice_modifier}) -> {crit_md}{dice_result.value}{crit_md}"
-    else:
-        modifier = ""
-    return f"{crit_md}{dice_result.result}{crit_md} {modifier}"
-
-def format_dice_success_result(dice_result:DiceResult, threshold:int,low_subtracting:bool=False):
-    """
-    Formats a DiceResult object as a string
-
-    Args:
-        dice_result (DiceResult): The DiceResult object to format
-        threshold (int): The threshold value to compare the dice roll to
-        low_subtracting (bool): Do we subtract 1 from the number of successes for each dice that rolled a 1?
-
-    Returns:
-        A string representing the DiceResult object
-    """
-    success_md = "**" if dice_result.value>=threshold else ""
-    if dice_result.result==1 and low_subtracting:
-        success_md = "~~"
-    if dice_result.dice_modifier > 0:
-        modifier = f"(+{dice_result.dice_modifier}) -> {success_md}{dice_result.value}{success_md}"
-    elif dice_result.dice_modifier < 0:
-        modifier = f"({dice_result.dice_modifier}) -> {success_md}{dice_result.value}{success_md}"
-    else:
-        modifier = ""
-    return f"{success_md}{dice_result.result}{success_md} {modifier}"
 
 class PolyDice(Extension):
     async def async_start(self):
