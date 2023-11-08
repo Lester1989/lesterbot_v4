@@ -21,9 +21,30 @@ async def on_ready():
 @slash_command(name="my_version", description="My check current bot version",**SCOPE_KWARG)
 async def my_version_function(ctx: SlashContext):
     """
-    A slash command that sends a "Hello World" message to the channel
+    A slash command that sends the current bot version to the channel
     """
     await ctx.send(pathlib.Path('version.txt').read_text(encoding='utf8'))
+
+
+@slash_command(name="open_todos", description="Return a list of the open Todos",**SCOPE_KWARG)
+async def my_version_function(ctx: SlashContext):
+    """
+    A slash command that sends a "Hello World" message to the channel
+    """
+    await ctx.send('''
+    - Make Database persistent
+    - Add logging
+    - Add webinterface
+    - Add more extensions
+      - Scheduler
+      - Vampire
+      - Hexxen
+      - DSA
+      - CharacterSheet
+      - saved rolls
+      - gm rolls
+    - repeatable rolls
+''')
 
 
 if __name__ == "__main__":
