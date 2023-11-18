@@ -1,23 +1,10 @@
-'''
-This module contains the database model for gifts in the werewolf game.
-'''
+"""This module contains the database model for gifts in the werewolf game."""
 import json
-import os
-from sqlalchemy import create_engine,  Integer, String
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import mapped_column,Mapped
-from sqlalchemy.orm import sessionmaker
 
-# create engine
-engine = create_engine(os.getenv('DB_CONNECTION_STRING', 'sqlite:///gifts.db'), echo=False)
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
 
-Session = sessionmaker(bind=engine,expire_on_commit=False)
-
-class Base(DeclarativeBase):
-    """
-    A base class for all database models.
-    """
-
+from app.library.db_models import Base, Session
 
 
 class Gift(Base):
@@ -37,12 +24,14 @@ class Gift(Base):
     available_for : str
         A string representing which roles can receive the gift.
     """
-    __tablename__ = 'gifts'
-    id:Mapped[int] = mapped_column(Integer, primary_key=True)
-    name:Mapped[str] = mapped_column(String)
-    description_fluff:Mapped[str] = mapped_column(String)
-    description_system:Mapped[str] = mapped_column(String)
-    available_for:Mapped[str] = mapped_column(String)
+
+    __tablename__ = "gifts"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String)
+    description_fluff: Mapped[str] = mapped_column(String)
+    description_system: Mapped[str] = mapped_column(String)
+    available_for: Mapped[str] = mapped_column(String)
+
 
 def load_gifts() -> list[Gift]:
     """
@@ -56,7 +45,8 @@ def load_gifts() -> list[Gift]:
     with Session() as session:
         return session.query(Gift).all()
 
-def parse_json(json_string:str) -> list[Gift]:
+
+def parse_json(json_string: str) -> list[Gift]:
     """
     Parse a JSON string and add the gifts to the database.
 

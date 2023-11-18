@@ -6,6 +6,6 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    environment: 
+    environment:
       DISCORDTOKEN: YOUR_DISCORD_TOKEN_HERE
     command: bash -c "alembic upgrade head && python app/main.py"

@@ -1,11 +1,19 @@
-from config import SCOPE_KWARG
-from interactions import Embed, Extension, slash_command, slash_option, SlashContext, OptionType,SlashCommandChoice
 import random
-import library.aengste as aengste
-import library.charaktereigenschaften as charaktereigenschaften
-import library.plaene as plaene
-from library.speciesnames import names as btw_names
 
+from interactions import (
+    Embed,
+    Extension,
+    OptionType,
+    SlashCommandChoice,
+    SlashContext,
+    slash_command,
+    slash_option,
+)
+
+import app.library.aengste as aengste
+import app.library.charaktereigenschaften as charaktereigenschaften
+import app.library.plaene as plaene
+from app.library.speciesnames import names as btw_names
 
 
 class NSCGen(Extension):
@@ -15,48 +23,55 @@ class NSCGen(Extension):
     @slash_command(
         name="btw_new",
         description="Erstellt einen zufälligen NSC für Beyond the Wall",
-        **SCOPE_KWARG)
+    )
     @slash_option(
-                name="mensch",
-                description="kann der NSC ein Mensch sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False )
+        name="mensch",
+        description="kann der NSC ein Mensch sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="zwerg",
-                description="kann der NSC ein Zwerg sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False )
+        name="zwerg",
+        description="kann der NSC ein Zwerg sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="elf",
-                description="kann der NSC ein Elf sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False)
+        name="elf",
+        description="kann der NSC ein Elf sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="ork",
-                description="kann der NSC ein Ork sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False)
+        name="ork",
+        description="kann der NSC ein Ork sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="goblin",
-                description="kann der NSC ein Goblin sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False,)
+        name="goblin",
+        description="kann der NSC ein Goblin sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="oger",
-                description="kann der NSC ein Oger sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False,)
+        name="oger",
+        description="kann der NSC ein Oger sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="nymph",
-                description="kann der NSC ein Nymph sein",
-                opt_type=OptionType.BOOLEAN,
-                required=False,)
+        name="nymph",
+        description="kann der NSC ein Nymph sein",
+        opt_type=OptionType.BOOLEAN,
+        required=False,
+    )
     @slash_option(
-                name="count",
-                description="Wieviele NSC sollen erstellt werden?",
-                opt_type=OptionType.INTEGER,
-                required=False,
-            )
+        name="count",
+        description="Wieviele NSC sollen erstellt werden?",
+        opt_type=OptionType.INTEGER,
+        required=False,
+    )
     async def random_btw_nsc(
         self,
         context: SlashContext,
@@ -67,7 +82,7 @@ class NSCGen(Extension):
         goblin: bool = False,
         oger: bool = False,
         nymph: bool = False,
-        count:int = 1
+        count: int = 1,
     ):
         available_species = []
         if mensch:
@@ -94,11 +109,9 @@ class NSCGen(Extension):
                 name = random.choice(btw_names[species])
             embed = Embed(
                 title=name,
-                description=", ".join(
-                    charaktereigenschaften.get_random() for _ in range(3)
-                ),
+                description=", ".join(charaktereigenschaften.get_random() for _ in range(3)),
             )
-            embed.add_field(name="Species", value=species,inline=False)
+            embed.add_field(name="Species", value=species, inline=False)
             nsc_plaene = f"*{plaene.get_random_gross()}*"
             smallplans = []
             for _ in range(random.randint(0, 3)):

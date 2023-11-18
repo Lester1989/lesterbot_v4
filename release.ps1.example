@@ -41,5 +41,5 @@ docker push $versionTag
 docker push $versionTagLatest
 
 # Invoke-RestMethod -Uri $registry... -Method POST
- 
+
 Write-Host "Stack rebuild triggered successfully!"
