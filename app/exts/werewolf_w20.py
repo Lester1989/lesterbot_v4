@@ -113,7 +113,10 @@ class WerewolfW20(Extension):
     )
     async def show_gift(self, ctx: SlashContext, gift_name: str):
         """Show gift description."""
-        gift = next((gift for gift in self.gifts if gift.name == gift_name), None)
+        gift = next((gift for gift in self.gifts if gift.name.lower() == gift_name.lower()), None)
+        if gift is None:
+            await ctx.send(f"Could not find gift {gift_name}")
+            return
         embed = Embed(title=gift.name, description=gift.description_fluff, color=0xFFFFFF)
         embed.add_field(name="System", value=gift.description_system, inline=False)
         embed.add_field(name="Available for", value=gift.available_for, inline=False)
