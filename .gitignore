@@ -196,3 +196,4 @@ pyrightconfig.json
 
 release.ps1
 docker-compose.yml
+gifts.db
