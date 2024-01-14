@@ -1,13 +1,20 @@
+import re
+
 import aiohttp
 from interactions import (
     Attachment,
     AutocompleteContext,
+    Button,
+    ButtonStyle,
+    ComponentContext,
     Embed,
     Extension,
     OptionType,
     SlashContext,
+    component_callback,
     slash_command,
     slash_option,
+    spread_to_rows,
 )
 
 from app.library.polydice import (
@@ -16,6 +23,8 @@ from app.library.polydice import (
     roll_dice_successes,
 )
 from app.library.werewolf_gifts import Gift, load_gifts, parse_json
+
+regex_pattern = re.compile(r"show_gift_(.*)")
 
 
 class WerewolfW20(Extension):
@@ -113,6 +122,9 @@ class WerewolfW20(Extension):
     )
     async def show_gift(self, ctx: SlashContext, gift_name: str):
         """Show gift description."""
+        return await self.display_gift(ctx, gift_name)
+
+    async def display_gift(self, ctx: SlashContext, gift_name: str):
         gift = next((gift for gift in self.gifts if gift.name.lower() == gift_name.lower()), None)
         if gift is None:
             await ctx.send(f"Could not find gift {gift_name}")
@@ -125,15 +137,12 @@ class WerewolfW20(Extension):
     @show_gift.autocomplete("gift_name")
     async def gift_name_autocomplete(self, ctx: AutocompleteContext):
         string_option_input = ctx.input_text
-        print(f"Autocomplete for {string_option_input}")
-        print(f"Gift names: {self.gift_names}")
 
         result = [
             {"name": gift_name, "value": gift_name}
             for gift_name in self.gift_names
             if string_option_input.lower() in gift_name
         ][:10]
-        print(f"Result: {result}")
         await ctx.send(choices=result)
 
     @slash_command(name="upload_gifts", description="Upload gifts from a CSV file")
@@ -161,3 +170,115 @@ class WerewolfW20(Extension):
                         f.write(chunk)
         with open(file_path, "r", encoding="utf8") as f:
             return f.read()
+
+    @slash_command(name="list_gifts_for", description="List all gifts")
+    @slash_option(
+        name="auspice",
+        description="The auspice to filter for",
+        required=False,
+        opt_type=OptionType.STRING,
+        choices=[
+            {"name": "Ahroun", "value": "Ahroun"},
+            {"name": "Galliard", "value": "Galliard"},
+            {"name": "Philodox", "value": "Philodox"},
+            {"name": "Theurge", "value": "Theurge"},
+            {"name": "Ragabash", "value": "Ragabash"},
+        ],
+    )
+    @slash_option(
+        name="tribe",
+        description="The tribe to filter for",
+        required=False,
+        opt_type=OptionType.STRING,
+        choices=[
+            {"name": "Fianna", "value": "Fianna"},
+            {"name": "Glaswandler", "value": "Glaswandler"},
+            {"name": "Kinder Gaias", "value": "Kinder Gaias"},
+            {"name": "Knochenbeißer", "value": "Knochenbeißer"},
+            {"name": "Nachfahren des Fenris", "value": "Nachfahren des Fenris"},
+            {"name": "Rote Klauen", "value": "Rote Klauen"},
+            {"name": "Schattenlords", "value": "Schattenlords"},
+            {"name": "Schwarze Furien", "value": "Schwarze Furien"},
+            {"name": "Silberfänge", "value": "Silberfänge"},
+            {"name": "Sternenträumer", "value": "Sternenträumer"},
+            {"name": "Stille Wanderer", "value": "Stille Wanderer"},
+            {"name": "Uktena", "value": "Uktena"},
+            {"name": "Wendigo", "value": "Wendigo"},
+            {"name": "Tänzer der schwarzen Spirale", "value": "Tänzer der schwarzen Spirale"},
+        ],
+    )
+    @slash_option(
+        name="breed",
+        description="The breed to filter for",
+        required=False,
+        opt_type=OptionType.STRING,
+        choices=[
+            {"name": "Menschling", "value": "Menschling"},
+            {"name": "Lupus", "value": "Lupus"},
+            {"name": "Metis", "value": "Metis"},
+        ],
+    )
+    @slash_option(
+        name="rank",
+        description="The rank to filter for",
+        required=False,
+        opt_type=OptionType.STRING,
+        choices=[
+            {"name": "Cliath", "value": "Cliath"},
+            {"name": "Pflegling", "value": "Pflegling"},
+            {"name": "Adren", "value": "Adren"},
+            {"name": "Athro", "value": "Athro"},
+            {"name": "Ältester", "value": "Ältester"},
+            {"name": "Legende", "value": "Legende"},
+        ],
+    )
+    async def list_gifts_for(
+        self,
+        ctx: SlashContext,
+        auspice: str = None,
+        tribe: str = None,
+        breed: str = None,
+        rank: str = None,
+    ):
+        """List all gifts."""
+        buttons: list[Button] = []
+        part_counter = 1
+        print("list_gifts_for")
+        print(f"auspice: {auspice}")
+        print(f"tribe: {tribe}")
+        print(f"breed: {breed}")
+        print(f"rank: {rank}")
+        for gift in self.gifts:
+            if (
+                (auspice is None or auspice.lower() in gift.available_for.lower())
+                and (tribe is None or tribe.lower() in gift.available_for.lower())
+                and (breed is None or breed.lower() in gift.available_for.lower())
+                and (rank is None or rank.lower() in gift.available_for.lower())
+            ):
+                buttons.append(
+                    Button(
+                        label=gift.name,
+                        style=ButtonStyle.PRIMARY,
+                        custom_id=f"show_gift_{gift.name}",
+                    )
+                )
+                print(f"Added {gift.name}")
+                if len(buttons) >= 25:
+                    print(f"Sent {part_counter} with {len(buttons)} buttons")
+                    await ctx.send(f"Gifts {part_counter}", components=spread_to_rows(*buttons))
+                    buttons = []
+                    part_counter += 1
+        if len(buttons) > 0:
+            await ctx.send(f"Gifts {part_counter}", components=spread_to_rows(*buttons))
+            part_counter += 1
+        if part_counter == 1:
+            await ctx.send(f"No gifts found for this filter ({len(self.gifts)} Gifts Total)")
+
+    @component_callback(regex_pattern)
+    async def show_gift_callback(self, ctx: ComponentContext):
+        """Show gift description."""
+        if match := regex_pattern.match(ctx.custom_id):
+            gift_name = match.group(1)
+            await self.display_gift(ctx, gift_name)
+        else:
+            await ctx.send(f"Could not find gift {ctx.custom_id}")

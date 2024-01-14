@@ -31,7 +31,6 @@ async def open_todos(ctx: SlashContext):
     """A slash command that sends a "Hello World" message to the channel."""
     await ctx.send(
         """
-    - Make Database persistent
     - Add logging
     - Add webinterface
     - Add more extensions
