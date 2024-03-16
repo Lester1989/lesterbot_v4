@@ -187,6 +187,55 @@ class DicePoolExclusionsSum(DicePoolResult):
                     formatted_dice = f"~~{formatted_dice}~~"
                 result += f"{formatted_dice}, "
         return result
+    
+@dataclass
+@total_ordering
+class DicePoolExclusionsDifference(DicePoolResult):
+    """Represents the result of a pool of dice rolls where some dice are excluded from the final result."""
+
+    threshold: int = 0
+    count_below: bool = True
+    excluded: list[DiceResult] = field(default_factory=list)
+
+    def __eq__(self, other):
+        if not isinstance(other, DicePoolExclusionsSum):
+            return NotImplemented
+        return self.sum == other.sum
+
+    def __lt__(self, other):
+        if not isinstance(other, DicePoolExclusionsSum):
+            return NotImplemented
+        return self.sum < other.sum
+
+    @property
+    def sum(self):
+        """Returns the sum of all the dice rolls, including any modifiers."""
+        return (
+            sum(
+                min(0,self.threshold-dice.value) if self.count_below else min(0,dice.value-self.threshold)
+                for dice in self.dice_results + self.extra_dice
+                if dice not in self.excluded
+            )
+            + self.pool_modifier
+        )
+
+    def formatted(self):
+        """Returns the sum of all the dice rolls, including any modifiers."""
+        result = ""
+        for dice in self.dice_results:
+            formatted_dice = format_dice_result(dice)
+            if dice in self.excluded:
+                formatted_dice = f"~~{formatted_dice}~~"
+            result += f"{formatted_dice}, "
+        if self.extra_dice:
+            result += "Bonuswürfel:\n"
+            for dice in self.extra_dice:
+                formatted_dice = format_dice_result(dice)
+                if dice in self.excluded:
+                    formatted_dice = f"~~{formatted_dice}~~"
+                result += f"{formatted_dice}, "
+        return result
+    
 
 
 @dataclass
@@ -201,6 +250,8 @@ class ComplexPool:
     failure_threshold: int = -1
     highest_count: int = 0
     lowest_count: int = 0
+    count_below: int = -1
+    count_above: int = -1
     description: str = ""
 
     def roll(self):
@@ -249,6 +300,16 @@ class ComplexPool:
             )
         else:
             successes = None
+        if self.count_below > -1 or self.count_above > -1:
+            return DicePoolExclusionsDifference(
+                pool_modifier=self.pool_modifier,
+                dice_results=base_result,
+                extra_dice=extra_result,
+                excluded=[dice for dice in base_result + extra_result if dice not in all_dice],
+                description=self.description,
+                threshold=max(self.count_below,self.count_above),
+                count_below=self.count_below>-1
+            )
         return DicePoolExclusionsSum(
             pool_modifier=self.pool_modifier,
             dice_results=base_result,

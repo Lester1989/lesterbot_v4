@@ -17,6 +17,9 @@ class ParsingState(Enum):
     DICE_MALUS = 10
     NUMBER = 11
     SIDES = 12
+    ABOVE = 13
+    BELOW = 14
+
 
 
 # * Each Description can start with number, if none is given 1 is assumed
@@ -24,6 +27,8 @@ class ParsingState(Enum):
 # * after the number of sides you can be more special dice behaviors:
 # s for success (greater or equal)
 # f for failure (less or equal)
+# < counts amount below
+# > counts amount above
 # ! for single exploding dice (greater or equal)
 # !! for recursively exploding dice (greater or equal)
 # h to use only the highest values (amount)
@@ -40,6 +45,8 @@ class Parser:
         "D": ParsingState.SIDES,
         "s": ParsingState.SUCCESS,
         "f": ParsingState.FAILURE,
+        "<": ParsingState.BELOW,
+        ">": ParsingState.ABOVE,
         "!": ParsingState.EXPLODE,
         "!!": ParsingState.EXPLODE_CASC,
         "h": ParsingState.HIGHEST,
@@ -51,7 +58,7 @@ class Parser:
     }
     tokens_list = sorted(tokens.keys(), key=len, reverse=True)
     state: ParsingState = ParsingState.NUMBER
-    tokens_found: list[tuple[str, int]] = []
+    tokens_found: list[tuple[ParsingState, int]] = []
     stack: str = ""
     input_string: str = ""
 
@@ -79,37 +86,42 @@ class Parser:
             self.tokens_found.append((self.state, int(self.stack) if self.stack else 1))
             self.stack = ""
 
+    @staticmethod
+    def insert_token_data(pool:ComplexPool,token:tuple[ParsingState,int]):
+        if token[0] == ParsingState.SUCCESS:
+            pool.success_threshold = token[1]
+        elif token[0] == ParsingState.FAILURE:
+            pool.failure_threshold = token[1]
+        elif token[0] == ParsingState.EXPLODE:
+            pool.explode = ExplodingBehavior.ONCE
+            pool.explode_threshold = token[1]
+        elif token[0] == ParsingState.EXPLODE_CASC:
+            pool.explode = ExplodingBehavior.CASCADING
+            pool.explode_threshold = token[1]
+        elif token[0] == ParsingState.HIGHEST:
+            pool.highest_count = token[1]
+        elif token[0] == ParsingState.LOWEST:
+            pool.lowest_count = token[1]
+        elif token[0] == ParsingState.POOL_BONUS:
+            pool.pool_modifier += token[1]
+        elif token[0] == ParsingState.POOL_MALUS:
+            pool.pool_modifier -= token[1]
+        elif token[0] == ParsingState.DICE_BONUS:
+            pool.dice_modifier += token[1]
+        elif token[0] == ParsingState.DICE_MALUS:
+            pool.dice_modifier -= token[1]
+        elif token[0] == ParsingState.NUMBER:
+            pool.number = token[1]
+        elif token[0] == ParsingState.SIDES:
+            pool.sides = token[1]
+        elif token[0] == ParsingState.ABOVE:
+            pool.count_above = token[1]
+        elif token[0] == ParsingState.BELOW:
+            pool.count_below = token[1]
+
+
     def build_pool(self):
         pool = ComplexPool(description=self.input_string)
         for token in self.tokens_found:
-            if token[0] == ParsingState.SUCCESS:
-                pool.success_threshold = token[1]
-            elif token[0] == ParsingState.FAILURE:
-                pool.failure_threshold = token[1]
-            elif token[0] == ParsingState.EXPLODE:
-                pool.explode = ExplodingBehavior.ONCE
-                pool.explode_threshold = token[1]
-            elif token[0] == ParsingState.EXPLODE_CASC:
-                pool.explode = ExplodingBehavior.CASCADING
-                pool.explode_threshold = token[1]
-            elif token[0] == ParsingState.HIGHEST:
-                pool.highest_count = token[1]
-            elif token[0] == ParsingState.LOWEST:
-                pool.lowest_count = token[1]
-            elif token[0] == ParsingState.POOL_BONUS:
-                pool.pool_modifier += token[1]
-            elif token[0] == ParsingState.POOL_MALUS:
-                pool.pool_modifier -= token[1]
-            elif token[0] == ParsingState.DICE_BONUS:
-                pool.dice_modifier += token[1]
-            elif token[0] == ParsingState.DICE_MALUS:
-                pool.dice_modifier -= token[1]
-            elif token[0] == ParsingState.NUMBER:
-                pool.number = token[1]
-            elif token[0] == ParsingState.SIDES:
-                pool.sides = token[1]
-            else:
-                raise ValueError(
-                    f"Unknown token {token[0]} with {token[1]} from {self.input_string}"
-                )
+            Parser.insert_token_data(pool,token)
         return pool
