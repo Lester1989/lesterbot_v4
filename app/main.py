@@ -2,18 +2,19 @@ import asyncio
 import os
 import pathlib
 import sys
+from datetime import datetime
 
 sys.path.append(".")
 
 from interactions import Client, Intents, SlashContext, listen, slash_command
 
 bot = Client(intents=Intents.DEFAULT)
-
+build_time = datetime.now()
 
 @listen()
 async def on_ready():
     """This event is called when the bot is ready to respond to commands."""
-    print("Ready")
+    print("Ready",build_time)
     print(f"This bot is owned by {bot.owner}")
     print("Guilds:")
     for guild in bot.guilds:
@@ -23,7 +24,7 @@ async def on_ready():
 @slash_command(name="my_version", description="My check current bot version")
 async def my_version_function(ctx: SlashContext):
     """A slash command that sends the current bot version to the channel."""
-    await ctx.send(pathlib.Path("version.txt").read_text(encoding="utf8"))
+    await ctx.send(f'Version {pathlib.Path("version.txt").read_text(encoding="utf8")}\nBuild Time {build_time}')
 
 
 @slash_command(name="open_todos", description="Return a list of the open Todos")
@@ -38,7 +39,6 @@ async def open_todos(ctx: SlashContext):
       - Vampire
       - Hexxen
       - DSA
-    - repeatable rolls
 """
     )
 
@@ -54,5 +54,6 @@ if __name__ == "__main__":
     bot.load_extension("exts.nsc_gen")
     bot.load_extension("exts.roll_complex")
     bot.load_extension("exts.charsheetmanager")
+    bot.load_extension("exts.initiative")
     print("Loaded extensions")
     bot.start(os.environ.get("DISCORDTOKEN"))
