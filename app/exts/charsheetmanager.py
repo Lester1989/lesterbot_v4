@@ -3,6 +3,8 @@ from interactions import (
     BaseContext,
     Embed,
     Extension,
+    LocalisedDesc,
+    LocalisedName,
     OptionType,
     SlashCommandChoice,
     SlashContext,
@@ -12,6 +14,7 @@ from interactions import (
     slash_option,
 )
 
+import app.localizer as localizer
 from app.library.charsheet import (
     AttributeType,
     CategorySetting,
@@ -51,19 +54,30 @@ class CharSheetManager(Extension):
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         users = CategoryUser.get_by_category(int(ctx.channel.category.id))
         embed = Embed(
-            title=f"Group {ctx.channel.category.name} {'(forming)' if settings.state == GroupState.CREATING else ''}",
+            title=localizer.translate(
+                ctx.locale,
+                "group_ctxchannelcategoryname_forming_if_settingsstate__groupstatecreating_else_",
+                ctxchannelcategoryname=ctx.channel.category.name,
+                forming_if_settingsstate__groupstatecreating_else_=localizer.translate(
+                    ctx.locale, "forming"
+                )
+                if settings.state == GroupState.CREATING
+                else "",
+            ),
             color=0xFFFFFF,
         )
-        embed.add_field(name="Rule System", value=settings.rule_system)
         embed.add_field(
-            name="GMs",
+            name=localizer.translate(ctx.locale, "rule_system"), value=settings.rule_system
+        )
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "gms"),
             value="\n".join(
                 ctx.guild.get_member(int(user.user_id)).display_name for user in users if user.is_gm
             ),
         )
         if any(not user.is_gm for user in users):
             embed.add_field(
-                name="Players",
+                name=localizer.translate(ctx.locale, "players"),
                 value="\n".join(
                     ctx.guild.get_member(int(user.user_id)).display_name
                     for user in users
@@ -71,27 +85,36 @@ class CharSheetManager(Extension):
                 ),
             )
         else:
-            embed.add_field(name="Players", value="invite players with /add_player")
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "players"),
+                value=localizer.translate(ctx.locale, "invite_players_with_add_player"),
+            )
         embed.add_field(
-            name="Character Changes",
-            value="Need GM approval after start"
+            name=localizer.translate(ctx.locale, "character_changes"),
+            value=localizer.translate(ctx.locale, "need_gm_approval_after_start")
             if settings.changes_need_approval
-            else "Approved by default",
+            else localizer.translate(ctx.locale, "approved_by_default"),
         )
         if settings.hidden_rolls_allowed:
-            embed.add_field(name="Hidden Rolls", value="Allowed")
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "hidden_rolls"),
+                value=localizer.translate(ctx.locale, "allowed"),
+            )
         if settings.web_interface_enabled:
-            embed.add_field(name="Web Interface", value="Coming soon")
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "web_interface"),
+                value=localizer.translate(ctx.locale, "coming_soon"),
+            )
 
         return embed
 
     @slash_command(
         name="start_group",
-        description="Opens a group, creates default settings and makes you GM",
+        description=LocalisedDesc(**localizer.translations("start_group_description")),
     )
     @slash_option(
         name="rule_system",
-        description="The rule system to use",
+        description=LocalisedDesc(**localizer.translations("rule_system_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -100,54 +123,90 @@ class CharSheetManager(Extension):
         settings = CategorySetting.create(int(ctx.channel.category.id))
         CategorySetting.update(settings.category_id, rule_system=rule_system)
         CategoryUser.create(int(ctx.channel.category.id), int(ctx.author.id), is_gm=True)
-        await ctx.send("Group created", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "group_created"), embed=self.show_group_info(ctx)
+        )
 
-    @slash_command(name="add_player", description="Joins a player to the group")
+    @slash_command(
+        name="add_player",
+        description=LocalisedDesc(**localizer.translations("add_player_description")),
+    )
     @slash_option(
-        name="player", description="The player to add", required=True, opt_type=OptionType.USER
+        name="player",
+        description=LocalisedDesc(**localizer.translations("player_description")),
+        required=True,
+        opt_type=OptionType.USER,
     )
     @check(is_gm)
     async def add_player(self, ctx: SlashContext, player: User):
         """Joins a player to the group."""
         CategoryUser.create(int(ctx.channel.category.id), int(player.id), is_gm=False)
-        await ctx.send("Player added", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "player_added"), embed=self.show_group_info(ctx)
+        )
 
-    @slash_command(name="remove_player", description="Removes a player from the group")
+    @slash_command(
+        name="remove_player",
+        description=LocalisedDesc(**localizer.translations("remove_player_description")),
+    )
     @slash_option(
-        name="player", description="The player to remove", required=True, opt_type=OptionType.USER
+        name="player",
+        description=LocalisedDesc(**localizer.translations("player_description")),
+        required=True,
+        opt_type=OptionType.USER,
     )
     @check(is_gm)
     async def remove_player(self, ctx: SlashContext, player: User):
         """Removes a player from the group."""
         CategoryUser.delete(int(ctx.channel.category.id), int(player.id))
-        await ctx.send("Player removed", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "player_removed"), embed=self.show_group_info(ctx)
+        )
 
-    @slash_command(name="add_gm", description="Makes a player GM")
+    @slash_command(
+        name="add_gm", description=LocalisedDesc(**localizer.translations("add_gm_description"))
+    )
     @slash_option(
-        name="player", description="The player to make GM", required=True, opt_type=OptionType.USER
+        name="player",
+        description=LocalisedDesc(**localizer.translations("player_description")),
+        required=True,
+        opt_type=OptionType.USER,
     )
     @check(is_gm)
     async def add_gm(self, ctx: SlashContext, player: User):
         """Makes a player GM."""
         CategoryUser.update(int(ctx.channel.category.id), int(player.id), is_gm=True)
-        await ctx.send("Player made GM", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "player_made_gm"), embed=self.show_group_info(ctx)
+        )
 
-    @slash_command(name="resign_gm", description="Removes GM status from you")
+    @slash_command(
+        name="resign_gm",
+        description=LocalisedDesc(**localizer.translations("resign_gm_description")),
+    )
     @check(is_gm)
     async def resign_gm(self, ctx: SlashContext):
         """Removes GM status from you."""
         CategoryUser.update(int(ctx.channel.category.id), int(ctx.author.id), is_gm=False)
-        await ctx.send("GM status removed", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "gm_status_removed"), embed=self.show_group_info(ctx)
+        )
 
-    @slash_command(name="show_group", description="Shows group info")
+    @slash_command(
+        name="show_group",
+        description=LocalisedDesc(**localizer.translations("show_group_description")),
+    )
     async def show_group(self, ctx: SlashContext):
         """Shows group info."""
         await ctx.send(embed=self.show_group_info(ctx))
 
-    @slash_command(name="set_rule_system", description="Sets the rule system to use")
+    @slash_command(
+        name="set_rule_system",
+        description=LocalisedDesc(**localizer.translations("set_rule_system_description")),
+    )
     @slash_option(
         name="rule_system",
-        description="The rule system to use",
+        description=LocalisedDesc(**localizer.translations("rule_system_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -155,16 +214,21 @@ class CharSheetManager(Extension):
     async def set_rule_system(self, ctx: SlashContext, rule_system: str):
         """Sets the rule system to use."""
         CategorySetting.update(int(ctx.channel.category.id), rule_system=rule_system)
-        await ctx.send("Rule system set", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "rule_system_set"), embed=self.show_group_info(ctx)
+        )
 
     @slash_command(
-        name="creation_finished", description="Stops free character creation and starts the game"
+        name="creation_finished",
+        description=LocalisedDesc(**localizer.translations("creation_finished_description")),
     )
     @check(is_gm)
     async def creation_finished(self, ctx: SlashContext):
         """Stops free character creation and starts the game."""
         CategorySetting.update(int(ctx.channel.category.id), state=GroupState.STARTED)
-        await ctx.send("Creation finished", embed=self.show_group_info(ctx))
+        await ctx.send(
+            localizer.translate(ctx.locale, "creation_finished"), embed=self.show_group_info(ctx)
+        )
 
     def chunk_list(self, items: list[str], join_char: str = "\n", max_length: int = 1000):
         current_string = ""
@@ -188,31 +252,35 @@ class CharSheetManager(Extension):
             CharactersheetEntry.get(character.user_id, int(ctx.channel.category.id), character.name)
             or []
         )
-        embed.add_field(name="Description", value=character.description)
-        embed.add_field(name="Player", value=f"<@{character.user_id}>")
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "description"), value=character.description
+        )
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "player"), value=f"<@{character.user_id}>"
+        )
         field_count = 2
         grouped_entries: dict[str, list[str]] = {
-            "Attributes": [
+            localizer.translate(ctx.locale, "attributes"): [
                 f"{entry.sheet_key}: {entry.value}"
                 for entry in char_sheet_entries
                 if entry.attribute_type == AttributeType.ATTRIBUTE
             ],
-            "Skills": [
+            localizer.translate(ctx.locale, "skills"): [
                 f"{entry.sheet_key}: {entry.value}"
                 for entry in char_sheet_entries
                 if entry.attribute_type == AttributeType.SKILL
             ],
-            "Specialties": [
+            localizer.translate(ctx.locale, "specialties"): [
                 f"{entry.sheet_key}: {entry.value}"
                 for entry in char_sheet_entries
                 if entry.attribute_type == AttributeType.SPECIALTY
             ],
-            "General": [
+            LocalisedDesc(**localizer.translations("general")): [
                 f"{entry.sheet_key}: {entry.value}"
                 for entry in char_sheet_entries
                 if entry.attribute_type == AttributeType.GENERAL
             ],
-            "Unknown": [
+            localizer.translate(ctx.locale, "unknown"): [
                 f"{entry.sheet_key}: {entry.value}"
                 for entry in char_sheet_entries
                 if entry.attribute_type == AttributeType.UNKNOWN
@@ -227,7 +295,9 @@ class CharSheetManager(Extension):
                 ):
                     results.append(embed)
                     embed = Embed(
-                        title=f"{character.name} (continued)",
+                        title=localizer.translate(
+                            ctx.locale, "charactername_continued", charactername=character.name
+                        ),
                         description=character.concept,
                         color=0xFFFFFF,
                     )
@@ -257,22 +327,25 @@ class CharSheetManager(Extension):
             ][:10]
         )
 
-    @slash_command(name="create_character", description="Creates a character sheet header")
+    @slash_command(
+        name="create_character",
+        description=LocalisedDesc(**localizer.translations("create_character_description")),
+    )
     @slash_option(
         name="name",
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="concept",
-        description="Short description of the character",
+        description=LocalisedDesc(**localizer.translations("concept_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="description",
-        description="Long description of the character",
+        description=LocalisedDesc(**localizer.translations("description_description")),
         required=False,
         opt_type=OptionType.STRING,
     )
@@ -283,31 +356,37 @@ class CharSheetManager(Extension):
         character = CharacterHeader.create(
             int(ctx.author.id), int(ctx.channel.category.id), name, concept, description
         )
-        await ctx.send("Character created", embed=self.display_character(ctx, character))
+        await ctx.send(
+            localizer.translate(ctx.locale, "character_created"),
+            embed=self.display_character(ctx, character),
+        )
 
-    @slash_command(name="update_character", description="Updates a character sheet header")
+    @slash_command(
+        name="update_character",
+        description=LocalisedDesc(**localizer.translations("update_character_description")),
+    )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="concept",
-        description="Short description of the character",
+        description=LocalisedDesc(**localizer.translations("concept_description")),
         required=False,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="description",
-        description="Long description of the character",
+        description=LocalisedDesc(**localizer.translations("description_description")),
         required=False,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="image_url",
-        description="Image to show for the character",
+        description=LocalisedDesc(**localizer.translations("image_url_description")),
         required=False,
         opt_type=OptionType.STRING,
     )
@@ -321,46 +400,53 @@ class CharSheetManager(Extension):
     ):
         """Updates a character sheet header."""
         character = CharacterHeader.update(name, concept, description, image_url)
-        await ctx.send("Character updated", embed=self.display_character(ctx, character))
+        await ctx.send(
+            localizer.translate(ctx.locale, "character_updated"),
+            embed=self.display_character(ctx, character),
+        )
 
     @update_character.autocomplete("name")
     async def update_character_name_autocomplete(self, ctx: AutocompleteContext):
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
-        name="delete_character", description="Deletes a character sheet header and all entries"
+        name="delete_character",
+        description=LocalisedDesc(**localizer.translations("delete_character_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="confirm",
-        description="Type 'confirm' to confirm the deletion, cannot be undone",
+        description=LocalisedDesc(**localizer.translations("confirm_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     async def delete_character(self, ctx: SlashContext, name: str, confirm: str):
         """Deletes a character sheet header and all entries."""
         if confirm != "confirm":
-            await ctx.send("Deletion not confirmed")
+            await ctx.send(localizer.translate(ctx.locale, "deletion_not_confirmed"))
             return
         CharacterHeader.delete(int(ctx.author_id), int(ctx.channel.category.id), name)
         CharactersheetEntry.delete(int(ctx.author_id), int(ctx.channel.category.id), name)
-        await ctx.send("Character deleted")
+        await ctx.send(localizer.translate(ctx.locale, "character_deleted"))
 
     @delete_character.autocomplete("name")
     async def delete_character_name_autocomplete(self, ctx: AutocompleteContext):
         await self.character_name_autocomplete(ctx)
 
-    @slash_command(name="show_character", description="Shows a character sheet header")
+    @slash_command(
+        name="show_character",
+        description=LocalisedDesc(**localizer.translations("show_character_description")),
+    )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -374,41 +460,52 @@ class CharSheetManager(Extension):
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         await self.character_name_autocomplete(ctx, True, not settings.character_hidden)
 
-    @slash_command(name="add_attribute", description="Adds an attribute to a character sheet")
+    @slash_command(
+        name="add_attribute",
+        description=LocalisedDesc(**localizer.translations("add_attribute_description")),
+    )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="attribute_name",
-        description="The name of the attribute",
+        description=LocalisedDesc(**localizer.translations("attribute_name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="attribute_value",
-        description="The value of the attribute",
+        description=LocalisedDesc(**localizer.translations("attribute_value_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="attribute_type",
-        description="The type of the attribute",
+        description=LocalisedDesc(**localizer.translations("the_type_of_the_attribute")),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
-            SlashCommandChoice(name="Attribute", value="Attribute"),
-            SlashCommandChoice(name="Skill", value="Skill"),
-            SlashCommandChoice(name="Specialty", value="Specialty"),
-            SlashCommandChoice(name="General", value="General"),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("attribute")), value="attribute"
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("skill")), value="skill"
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("specialty")), value="specialty"
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("general")), value="general"
+            ),
         ],
     )
     @slash_option(
         name="override",
-        description="Overrides an existing attribute",
+        description=LocalisedDesc(**localizer.translations("override_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
@@ -436,7 +533,7 @@ class CharSheetManager(Extension):
                 attribute_value,
                 AttributeType(attribute_type),
             )
-            await ctx.send("Attribute added")
+            await ctx.send(localizer.translate(ctx.locale, "attribute_added"))
         else:
             if override:
                 SheetModification.delete(
@@ -449,21 +546,24 @@ class CharSheetManager(Extension):
                 attribute_name,
                 attribute_value,
                 AttributeType(attribute_type),
-                "Attribute added",
+                LocalisedDesc(**localizer.translations("attribute_added")),
             )
-            await ctx.send("Attribute added, waiting for approval by your gm")
+            await ctx.send(
+                localizer.translate(ctx.locale, "attribute_added_waiting_for_approval_by_your_gm")
+            )
 
     @add_attribute.autocomplete("name")
     async def add_attribute_name_autocomplete(self, ctx: AutocompleteContext):
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
-        name="list_pending_changes", description="Lists pending changes for a character sheet"
+        name="list_pending_changes",
+        description=LocalisedDesc(**localizer.translations("list_pending_changes_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -471,7 +571,7 @@ class CharSheetManager(Extension):
         """Lists pending changes for a character sheet."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         if settings.state == GroupState.CREATING or not settings.changes_need_approval:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         changes: dict[str, SheetModification] = {
             f"{change.sheet_key}": change
@@ -481,7 +581,7 @@ class CharSheetManager(Extension):
             if change.status == ModificationState.PENDING
         }
         if not changes:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         original_character: dict[str, CharactersheetEntry] = {
             f"{entry.sheet_key}": entry
@@ -491,7 +591,7 @@ class CharSheetManager(Extension):
             if entry.sheet_key in changes
         }
         embed = Embed(
-            title=f"Pending changes for {name}",
+            title=localizer.translate(ctx.locale, "pending_changes_for_name", name=name),
             color=0xFFFFFF,
         )
         changing_types = {change.attribute_type for change in changes.values()}
@@ -507,9 +607,12 @@ class CharSheetManager(Extension):
             for i, change_block in enumerate(self.chunk_list(change_list)):
                 embed.add_field(name=f"{attribute_type} {i+1}", value=change_block)
         action_advice = (
-            "wait for your GM to approve them"
+            localizer.translate(ctx.locale, "wait_for_your_gm_to_approve_them")
             if is_gm(ctx)
-            else "approve them all with /approve_all_changes or /reject_all_changes\n\n Or handle them one by one with /approve_change or /reject_change"
+            else localizer.translate(
+                ctx.locale,
+                "approve_them_all_with_approve_all_changes_or_reject_all_changesnn_or_handle_them_one_by_one_with_approve_change_or_reject_change",
+            )
         )
         await ctx.send(action_advice, embed=embed)
 
@@ -518,12 +621,13 @@ class CharSheetManager(Extension):
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
-        name="approve_all_changes", description="Approves all pending changes for a character sheet"
+        name="approve_all_changes",
+        description=LocalisedDesc(**localizer.translations("approve_all_changes_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -532,7 +636,7 @@ class CharSheetManager(Extension):
         """Approves all pending changes for a character sheet."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         if settings.state == GroupState.CREATING or not settings.changes_need_approval:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         changes = SheetModification.get(int(ctx.author_id), int(ctx.channel.category.id), name)
         change_count = 0
@@ -554,25 +658,33 @@ class CharSheetManager(Extension):
                     change.sheet_key,
                     status=ModificationState.APPROVED,
                 )
-        await ctx.send(f"All {change_count} changes approved for {name}")
+        await ctx.send(
+            localizer.translate(
+                ctx.locale,
+                "all_change_count_changes_approved_for_name",
+                change_count=change_count,
+                name=name,
+            )
+        )
 
     @approve_all_changes.autocomplete("name")
     async def approve_all_changes_name_autocomplete(self, ctx: AutocompleteContext):
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
-        name="reject_all_changes", description="Rejects all pending changes for a character sheet"
+        name="reject_all_changes",
+        description=LocalisedDesc(**localizer.translations("reject_all_changes_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="reason",
-        description="The reason for the rejection",
+        description=LocalisedDesc(**localizer.translations("reason_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -581,7 +693,7 @@ class CharSheetManager(Extension):
         """Rejects all pending changes for a character sheet."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         if settings.state == GroupState.CREATING or not settings.changes_need_approval:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         changes = SheetModification.get(int(ctx.author_id), int(ctx.channel.category.id), name)
         change_count = 0
@@ -596,7 +708,14 @@ class CharSheetManager(Extension):
                     status=ModificationState.REJECTED,
                     comment=reason,
                 )
-        await ctx.send(f"All {change_count} changes rejected for {name}")
+        await ctx.send(
+            localizer.translate(
+                ctx.locale,
+                "all_change_count_changes_rejected_for_name",
+                change_count=change_count,
+                name=name,
+            )
+        )
 
     @reject_all_changes.autocomplete("name")
     async def reject_all_changes_name_autocomplete(self, ctx: AutocompleteContext):
@@ -626,19 +745,20 @@ class CharSheetManager(Extension):
         )
 
     @slash_command(
-        name="approve_change", description="Approves a pending change for a character sheet"
+        name="approve_change",
+        description=LocalisedDesc(**localizer.translations("approve_change_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="attribute_name",
         autocomplete=True,
-        description="The name of the attribute",
+        description=LocalisedDesc(**localizer.translations("attribute_name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -647,7 +767,7 @@ class CharSheetManager(Extension):
         """Approves a pending change for a character sheet."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         if settings.state == GroupState.CREATING or not settings.changes_need_approval:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         change = SheetModification.get_key(
             int(ctx.author_id), int(ctx.channel.category.id), name, attribute_name
@@ -668,9 +788,9 @@ class CharSheetManager(Extension):
                 attribute_name,
                 status=ModificationState.APPROVED,
             )
-            await ctx.send(f"Change approved for {name}")
+            await ctx.send(localizer.translate(ctx.locale, "change_approved_for_name", name=name))
             return
-        await ctx.send("No pending change found")
+        await ctx.send(localizer.translate(ctx.locale, "no_pending_change_found"))
 
     @approve_change.autocomplete("name")
     async def approve_change_name_autocomplete(self, ctx: AutocompleteContext):
@@ -681,25 +801,26 @@ class CharSheetManager(Extension):
         self.change_attribute_name_autocomplete(ctx)
 
     @slash_command(
-        name="reject_change", description="Rejects a pending change for a character sheet"
+        name="reject_change",
+        description=LocalisedDesc(**localizer.translations("reject_change_description")),
     )
     @slash_option(
         name="name",
         autocomplete=True,
-        description="The name of the character",
+        description=LocalisedDesc(**localizer.translations("name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="attribute_name",
         autocomplete=True,
-        description="The name of the attribute",
+        description=LocalisedDesc(**localizer.translations("attribute_name_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="reason",
-        description="The reason for the rejection",
+        description=LocalisedDesc(**localizer.translations("reason_description")),
         required=True,
         opt_type=OptionType.STRING,
     )
@@ -708,7 +829,7 @@ class CharSheetManager(Extension):
         """Rejects a pending change for a character sheet."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         if settings.state == GroupState.CREATING or not settings.changes_need_approval:
-            await ctx.send("No pending changes")
+            await ctx.send(localizer.translate(ctx.locale, "no_pending_changes"))
             return
         change = SheetModification.get_key(
             int(ctx.author_id), int(ctx.channel.category.id), name, attribute_name
@@ -722,9 +843,9 @@ class CharSheetManager(Extension):
                 status=ModificationState.REJECTED,
                 comment=reason,
             )
-            await ctx.send(f"Change rejected for {name}")
+            await ctx.send(localizer.translate(ctx.locale, "change_rejected_for_name", name=name))
             return
-        await ctx.send("No pending change found")
+        await ctx.send(localizer.translate(ctx.locale, "no_pending_change_found"))
 
     @reject_change.autocomplete("name")
     async def reject_change_name_autocomplete(self, ctx: AutocompleteContext):
@@ -735,23 +856,24 @@ class CharSheetManager(Extension):
         self.change_attribute_name_autocomplete(ctx)
 
     @slash_command(
-        name="gm_roll_initiative", description="Rolls initiative for all players and GMs"
+        name="gm_roll_initiative",
+        description=LocalisedDesc(**localizer.translations("gm_roll_initiative_description")),
     )
     @slash_option(
         name="nsc_slots",
-        description="The number of NPC slots if more than 1",
+        description=LocalisedDesc(**localizer.translations("nsc_slots_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="npc_roll",
-        description="The roll for the NPCs (see /roll_help)",
+        description=LocalisedDesc(**localizer.translations("npc_roll_description")),
         required=False,
         opt_type=OptionType.STRING,
     )
     @slash_option(
         name="hidden",
-        description="If the rolls should be hidden from players",
+        description=LocalisedDesc(**localizer.translations("hidden_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
@@ -763,14 +885,20 @@ class CharSheetManager(Extension):
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         initiative_rule = RuleSystemRolls.get(settings.rule_system, "INITIATIVE")
         if not initiative_rule:
-            await ctx.send(f"No initiative rule found for {settings.rule_system}")
+            await ctx.send(
+                localizer.translate(
+                    ctx.locale,
+                    "no_initiative_rule_found_for_settingsrule_system",
+                    settingsrule_system=settings.rule_system,
+                )
+            )
             return
         if npc_slots and not npc_roll:
-            await ctx.send("Please provide a roll for the NPCs")
+            await ctx.send(localizer.translate(ctx.locale, "please_provide_a_roll_for_the_npcs"))
             return
 
         characters = CharacterHeader.get_by_category(int(ctx.channel.category.id))
-        result = "**Initiative Rolls**\n"
+        result = localizer.translate(ctx.locale, "initiative_rollsn")
         player_rolls: dict[str, ComplexPool] = {}
         for player_id_char_name, character_list in characters.items():
             player_id, char_name = player_id_char_name
@@ -786,12 +914,21 @@ class CharSheetManager(Extension):
                 }
                 if len(sheet_entries) != len(initiative_rule.needed_sheet_values):
                     await ctx.send(
-                        f"Missing values for {character.name}: {', '.join(initiative_rule.needed_sheet_values - set(sheet_entries.keys()))}"
+                        localizer.translate(
+                            ctx.locale,
+                            "missing_values_for_charactername__joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys",
+                            charactername=character.name,
+                            _joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys=", ".join(
+                                initiative_rule.needed_sheet_values - set(sheet_entries.keys())
+                            ),
+                        )
                     )
                     continue
                 player_rolls[char_name] = Parser(initiative_rule.eval(sheet_entries)).build_pool()
         for i in range(npc_slots):
-            player_rolls[f"NPC {i+1}"] = Parser(npc_roll).build_pool()
+            player_rolls[localizer.translate(ctx.locale, "npc_i1", i1=i + 1)] = Parser(
+                npc_roll
+            ).build_pool()
         results = [
             (player_name, player_pool.roll()) for player_name, player_pool in player_rolls.items()
         ]

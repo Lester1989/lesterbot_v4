@@ -1,6 +1,7 @@
 from interactions import (
     Embed,
     Extension,
+    LocalisedDesc,
     Message,
     OptionType,
     SlashCommandChoice,
@@ -8,23 +9,35 @@ from interactions import (
     slash_command,
     slash_option,
 )
-from app.library.initiativatracking import InitiativeTracking,insert_after_name,insert_before_index,insert_before_name, remove_from_initiative,set_channel_initiative,remove_channel_initiative,get_channel_initiative,insert_channel_message
+
+import app.localizer as localizer
+from app.library.initiativatracking import (
+    InitiativeTracking,
+    get_channel_initiative,
+    insert_after_name,
+    insert_before_index,
+    insert_before_name,
+    insert_channel_message,
+    remove_channel_initiative,
+    remove_from_initiative,
+    set_channel_initiative,
+)
 
 
 class InitiativeTracker(Extension):
-    
     async def async_start(self):
         print("Starting InitiativeTracker Extension")
 
     @slash_command(
-        name='initiative_help',
-        description='shows help for the commands about initiatve tracking'
+        name="initiative_help",
+        description=LocalisedDesc(**localizer.translations("initiative_help_description")),
     )
-    async def initiative_help(self,ctx:SlashContext):
-        await ctx.send('''
+    async def initiative_help(self, ctx: SlashContext):
+        await ctx.send(
+            """
 **Initiative Tracking**
 You can start a List for initiative by providing a list of ordered participants in the /initiative command. The Participants need to be seperated by comma
-                       
+
 Or by inserting a name or two with:
 * /initiative_insert_before
 * /initiative_insert_after
@@ -35,129 +48,173 @@ You can also use these 4 commands to change the order.
 With /initiative_remove you can remove one participant from the list
 
 With /initiative_delete you can delete the complete list
-                       
+
 Use /initiative_show to just refresh the message
-'''
+"""  # TODO: LOCALIZATION FLAG
         )
 
-    @slash_command( name='initiative',
-        description='start initiative tracking in this channel'
+    @slash_command(
+        name="initiative",
+        description=LocalisedDesc(**localizer.translations("initiative_description")),
     )
-    @slash_option( name='participants',
-        description='you can provide an initial ordered list of names e.g. Robin,Alex,NPC1',
+    @slash_option(
+        name="participants",
+        description=LocalisedDesc(**localizer.translations("participants_description")),
         required=False,
-        opt_type=OptionType.STRING
+        opt_type=OptionType.STRING,
     )
-    async def start_initiative(self,ctx:SlashContext,participants:str=""):
-        channel_id:str = str(ctx.channel_id)
+    async def start_initiative(self, ctx: SlashContext, participants: str = ""):
+        channel_id: str = str(ctx.channel_id)
         if existing_trackings := get_channel_initiative(channel_id):
-            if old_message := ctx.channel.get_message(
-                existing_trackings[0].message_id
-            ):
+            if old_message := ctx.channel.get_message(existing_trackings[0].message_id):
                 await ctx.channel.delete_message(old_message)
-        set_channel_initiative(channel_id,*[name.strip() for name in participants.split(',') if name])
+        set_channel_initiative(
+            channel_id, *[name.strip() for name in participants.split(",") if name]
+        )
         await show_channel_initiative(ctx)
 
-
-    @slash_command( name='initiative_show',
-        description='shows the initiative list without changing it')
-    async def show_initiative(self,ctx:SlashContext):
-        channel_id:str = str(ctx.channel_id)
+    @slash_command(
+        name="initiative_show",
+        description=LocalisedDesc(**localizer.translations("initiative_show_description")),
+    )
+    async def show_initiative(self, ctx: SlashContext):
+        channel_id: str = str(ctx.channel_id)
         trackings = get_channel_initiative(channel_id)
-        await ctx.send( embed = render_initiative([tracking.name for tracking in trackings]))
+        await ctx.send(embed=render_initiative(ctx, [tracking.name for tracking in trackings]))
 
-
-    @slash_command( name='initiative_insert_before',
-        description='adds or moves a participant before another participant'
+    @slash_command(
+        name="initiative_insert_before",
+        description=LocalisedDesc(**localizer.translations("initiative_insert_before_description")),
     )
-    @slash_option(name='name',description='name of moved or inserted participant',opt_type=OptionType.STRING)
-    @slash_option(name='name_after',description='name to add before',opt_type=OptionType.STRING)
-    async def insert_before(self,ctx:SlashContext,name:str,name_after:str):
-        channel_id:str = str(ctx.channel_id)
+    @slash_option(
+        name="name",
+        description=LocalisedDesc(**localizer.translations("name_description")),
+        opt_type=OptionType.STRING,
+    )
+    @slash_option(
+        name="name_after",
+        description=LocalisedDesc(**localizer.translations("name_after_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def insert_before(self, ctx: SlashContext, name: str, name_after: str):
+        channel_id: str = str(ctx.channel_id)
         if not get_channel_initiative(channel_id):
-            set_channel_initiative(channel_id,name.strip(),name_after.strip())
+            set_channel_initiative(channel_id, name.strip(), name_after.strip())
         else:
-            insert_before_name(channel_id,name_after.strip(),name.strip())
+            insert_before_name(channel_id, name_after.strip(), name.strip())
         await show_channel_initiative(ctx)
 
-    @slash_command( name='initiative_insert_after',
-        description='adds or moves a participant after another participant'
+    @slash_command(
+        name="initiative_insert_after",
+        description=LocalisedDesc(**localizer.translations("initiative_insert_after_description")),
     )
-    @slash_option(name='name',description='name of moved or inserted participant',opt_type=OptionType.STRING)
-    @slash_option(name='name_before',description='name to add after',opt_type=OptionType.STRING)
-    async def insert_after(self,ctx:SlashContext,name:str,name_before:str):
-        channel_id:str = str(ctx.channel_id)
+    @slash_option(
+        name="name",
+        description=LocalisedDesc(**localizer.translations("name_description")),
+        opt_type=OptionType.STRING,
+    )
+    @slash_option(
+        name="name_before",
+        description=LocalisedDesc(**localizer.translations("name_before_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def insert_after(self, ctx: SlashContext, name: str, name_before: str):
+        channel_id: str = str(ctx.channel_id)
         if not get_channel_initiative(channel_id):
-            set_channel_initiative(channel_id,name_before.strip(),name.strip())
+            set_channel_initiative(channel_id, name_before.strip(), name.strip())
         else:
-            insert_after_name(channel_id,name_before.strip(),name.strip())
+            insert_after_name(channel_id, name_before.strip(), name.strip())
         await show_channel_initiative(ctx)
 
-    @slash_command( name='initiative_insert_first',
-        description='adds or moves a participant at first place'
+    @slash_command(
+        name="initiative_insert_first",
+        description=LocalisedDesc(**localizer.translations("initiative_insert_first_description")),
     )
-    @slash_option(name='name',description='name of moved or inserted participant',opt_type=OptionType.STRING)
-    async def insert_after(self,ctx:SlashContext,name:str):
-        channel_id:str = str(ctx.channel_id)
+    @slash_option(
+        name="name",
+        description=LocalisedDesc(**localizer.translations("name_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def insert_first(self, ctx: SlashContext, name: str):
+        channel_id: str = str(ctx.channel_id)
         if not get_channel_initiative(channel_id):
-            set_channel_initiative(channel_id,name.strip())
+            set_channel_initiative(channel_id, name.strip())
         else:
-            insert_before_index(channel_id,0,name.strip())
+            insert_before_index(channel_id, 0, name.strip())
         await show_channel_initiative(ctx)
 
-    @slash_command( name='initiative_insert_last',
-        description='adds or moves a participant at first place'
+    @slash_command(
+        name="initiative_insert_last",
+        description=LocalisedDesc(**localizer.translations("initiative_insert_first_description")),
     )
-    @slash_option(name='name',description='name of moved or inserted participant',opt_type=OptionType.STRING)
-    async def insert_after(self,ctx:SlashContext,name:str):
-        channel_id:str = str(ctx.channel_id)
+    @slash_option(
+        name="name",
+        description=LocalisedDesc(**localizer.translations("name_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def insert_last(self, ctx: SlashContext, name: str):
+        channel_id: str = str(ctx.channel_id)
         if existing := get_channel_initiative(channel_id):
-            insert_before_index(channel_id,existing[-1].initiative_order+1,name.strip())
+            insert_before_index(channel_id, existing[-1].initiative_order + 1, name.strip())
         else:
-            set_channel_initiative(channel_id,name.strip())
+            set_channel_initiative(channel_id, name.strip())
         await show_channel_initiative(ctx)
 
-    @slash_command( name='initiative_remove',
-        description='remove one participant from initiative order'
+    @slash_command(
+        name="initiative_remove",
+        description=LocalisedDesc(**localizer.translations("initiative_remove_description")),
     )
-    @slash_option(name='name',description='name of participant to remove',opt_type=OptionType.STRING)
-    async def remove_name(self,ctx:SlashContext, name:str):
-        channel_id:str = str(ctx.channel_id)
-        remove_from_initiative(channel_id,name.strip())
-        await show_channel_initiative(ctx,True)
+    @slash_option(
+        name="name",
+        description=LocalisedDesc(**localizer.translations("name_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def remove_name(self, ctx: SlashContext, name: str):
+        channel_id: str = str(ctx.channel_id)
+        remove_from_initiative(channel_id, name.strip())
+        await show_channel_initiative(ctx, True)
 
-    @slash_command( name='initiative_delete',
-        description='deletes the initiative tracking')
-    @slash_option(name='confirmation',description='type YES to confirm deletion',opt_type=OptionType.STRING)
-    async def delete_initiative(self,ctx:SlashContext,confirmation:str):
-        if confirmation != 'YES':
-            await ctx.send('you need to say YES (all caps) to confirm deletion',ephemeral=True)
+    @slash_command(
+        name="initiative_delete",
+        description=LocalisedDesc(**localizer.translations("initiative_delete_description")),
+    )
+    @slash_option(
+        name="confirmation",
+        description=LocalisedDesc(**localizer.translations("confirmation_description")),
+        opt_type=OptionType.STRING,
+    )
+    async def delete_initiative(self, ctx: SlashContext, confirmation: str):
+        if confirmation != "YES":
+            await ctx.send(
+                localizer.translate(ctx.locale, "you_need_to_say_yes_all_caps_to_confirm_deletion"),
+                ephemeral=True,
+            )
             return
-        
-        channel_id:str = str(ctx.channel_id)
+
+        channel_id: str = str(ctx.channel_id)
         if existing_trackings := get_channel_initiative(channel_id):
-            if old_message := ctx.channel.get_message(
-                existing_trackings[0].message_id
-            ):
+            if old_message := ctx.channel.get_message(existing_trackings[0].message_id):
                 await ctx.channel.delete_message(old_message)
         remove_channel_initiative(channel_id)
-        await ctx.send('initiative removed')
+        await ctx.send(localizer.translate(ctx.locale, "initiative_removed"))
 
-async def show_channel_initiative(ctx:SlashContext,refresh_message:bool=False):
-    channel_id:str = str(ctx.channel_id)
+
+async def show_channel_initiative(ctx: SlashContext, refresh_message: bool = False):
+    channel_id: str = str(ctx.channel_id)
     trackings = get_channel_initiative(channel_id)
     names = [tracking.name for tracking in trackings]
     if refresh_message and trackings:
-        if old_message := ctx.channel.get_message(
-            trackings[0].message_id
-        ):
+        if old_message := ctx.channel.get_message(trackings[0].message_id):
             await ctx.channel.delete_message(old_message)
             return
-    new_message = await ctx.send(embed=render_initiative(names))
-    insert_channel_message(channel_id,str(new_message.id))
+    new_message = await ctx.send(embed=render_initiative(ctx, names))
+    insert_channel_message(channel_id, str(new_message.id))
 
-def render_initiative(names:list[str]):
+
+def render_initiative(ctx: SlashContext, names: list[str]):
     return Embed(
-        title='Initiative Tracker',
-        description='\n'.join(names) if names else 'EMPTY -> use insert commands to fill the slots'
+        title=localizer.translate(ctx.locale, "initiative_tracker"),
+        description="\n".join(names)
+        if names
+        else localizer.translate(ctx.locale, "empty__use_insert_commands_to_fill_the_slots"),
     )

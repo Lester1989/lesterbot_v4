@@ -5,6 +5,8 @@ from interactions import (
     ComponentContext,
     Embed,
     Extension,
+    LocalisedDesc,
+    LocalisedName,
     Modal,
     ModalContext,
     OptionType,
@@ -18,26 +20,31 @@ from interactions import (
     spread_to_rows,
 )
 
-from app.library.complex_dice_parser import Parser, ParsingState
+import app.localizer as localizer
+from app.library.complex_dice_parser import Parser
 from app.library.polydice import (
+    DicePoolExclusionsDifference,
     DicePoolExclusionsSuccesses,
     DicePoolExclusionsSum,
-    DicePoolExclusionsDifference,
-    DiceResult,
-    ExplodingBehavior,
-    format_dice_result,
-    format_dice_success_result,
-    roll_dice_successes,
-    roll_dice_sum,
 )
-from app.library.saved_rolls import SavedRoll,engine,Session,get_by_id,get_by_user,invalidate_cache
+from app.library.saved_rolls import (
+    SavedRoll,
+    Session,
+    engine,
+    get_by_id,
+    get_by_user,
+    invalidate_cache,
+)
 
 
 class RollComplex(Extension):
     async def async_start(self):
         print("Starting RollComplex Extension")
 
-    @slash_command(name="roll_help", description="Displays help for the /roll_complex command")
+    @slash_command(
+        name="roll_help",
+        description=LocalisedDesc(**localizer.translations("roll_help_description")),
+    )
     async def roll_help(self, ctx: SlashContext):
         await ctx.send(
             """
@@ -80,96 +87,135 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
 
     @slash_command(
         name="roll_complex",
-        description="Rolls a number of dice and displays the result see /roll_help for more info",
+        description=LocalisedDesc(**localizer.translations("roll_complex_description")),
     )
     @slash_option(
-        name="dice_pool", description="The dice to roll", required=True, opt_type=OptionType.STRING
+        name="dice_pool",
+        description=LocalisedDesc(**localizer.translations("dice_pool_description")),
+        required=True,
+        opt_type=OptionType.STRING,
     )
     async def roll_complex(self, ctx: SlashContext, dice_pool: str):
         await ctx.defer()
-        result_embeds = self.create_embeds(ctx.author.display_name.split(' ')[0],dice_pool)
+        result_embeds = self.create_embeds(ctx, ctx.author.display_name.split(" ")[0], dice_pool)
         action_rows = spread_to_rows(
-            Button(style=ButtonStyle.GRAY,label=".",custom_id=dice_pool,disabled=True),
-            Button(style=ButtonStyle.BLUE,label="Save",custom_id='save_complex_pool')
+            Button(style=ButtonStyle.GRAY, label=".", custom_id=dice_pool, disabled=True),
+            Button(
+                style=ButtonStyle.BLUE,
+                label=localizer.translate(ctx.locale, "save"),
+                custom_id="save_complex_pool",
+            ),
         )
         for embed in result_embeds:
-            await ctx.send(embed=embed,components=action_rows)
+            await ctx.send(embed=embed, components=action_rows)
 
     @slash_command(
         name="save_roll",
-        description="Saves a complex roll with a name for you"
+        description=LocalisedDesc(**localizer.translations("save_roll_description")),
     )
     @slash_option(
-        name="dice_pool", description="The dice to roll", required=True, opt_type=OptionType.STRING
+        name="dice_pool",
+        description=LocalisedDesc(**localizer.translations("dice_pool_description")),
+        required=True,
+        opt_type=OptionType.STRING,
     )
     @slash_option(
-        name="roll_name", description="a name you would give to this roll", required=True, opt_type=OptionType.STRING
+        name="roll_name",
+        description=LocalisedDesc(**localizer.translations("roll_name_description")),
+        required=True,
+        opt_type=OptionType.STRING,
     )
     @slash_option(
-        name="scope", 
-        description="should the roll be available server-wide, category-wide or just in this channel(default)", 
-        required=False, 
-        opt_type=OptionType.STRING, 
+        name="scope",
+        description=LocalisedDesc(
+            **localizer.translations(
+                "should_the_roll_be_available_serverwide_categorywide_or_just_in_this_channeldefault"
+            )
+        ),
+        required=False,
+        opt_type=OptionType.STRING,
         choices=[
-            SlashCommandChoice(name='serverwide',value='server'),
-            SlashCommandChoice(name='categorywide',value='category'),
-            SlashCommandChoice(name='channelwide',value='channel'),
-        ]
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("serverwide")), value="server"
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("categorywide")), value="category"
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("channelwide")), value="channel"
+            ),
+        ],
     )
-    async def save_roll(self, ctx:SlashContext, dice_pool:str,roll_name:str,scope:str="channel"):
-        if scope == 'server':
+    async def save_roll(
+        self, ctx: SlashContext, dice_pool: str, roll_name: str, scope: str = "channel"
+    ):
+        if scope == "server":
             discord_id = str(ctx.guild_id)
-        elif scope == 'category':
+        elif scope == "category":
             discord_id = str(ctx.channel.parent_id)
         else:
             discord_id = str(ctx.channel_id)
-        db_object = SavedRoll(user_id=str(ctx.author_id),discord_id=discord_id,scope=scope,dice_pool=dice_pool,name=roll_name)
-        with Session(engine,) as session:
+        db_object = SavedRoll(
+            user_id=str(ctx.author_id),
+            discord_id=discord_id,
+            scope=scope,
+            dice_pool=dice_pool,
+            name=roll_name,
+        )
+        with Session(
+            engine,
+        ) as session:
             session.add(db_object)
             session.commit()
         invalidate_cache()
-        await ctx.send("saved",ephemeral=True)
+        await ctx.send(LocalisedDesc(**localizer.translations("saved")), ephemeral=True)
 
     @slash_command(
-        name='named_roll',
-        description='reuses a roll previosly saved by you'
+        name="named_roll",
+        description=LocalisedDesc(**localizer.translations("named_roll_description")),
     )
     @slash_option(
-        name='roll_name',description='name of the roll specified on save', opt_type=OptionType.STRING,required=True,autocomplete=True
+        name="roll_name",
+        description=LocalisedDesc(**localizer.translations("roll_name_description")),
+        opt_type=OptionType.STRING,
+        required=True,
+        autocomplete=True,
     )
-    async def named_roll(self,ctx:SlashContext,roll_name:str):
+    async def named_roll(self, ctx: SlashContext, roll_name: str):
         saved_roll_id = int(roll_name)
         saved_roll = get_by_id(saved_roll_id)
-        
+
         await ctx.defer()
-        result_embeds = self.create_embeds(ctx.author.display_name.split(' ')[0],saved_roll.dice_pool)
+        result_embeds = self.create_embeds(
+            ctx, ctx.author.display_name.split(" ")[0], saved_roll.dice_pool
+        )
         for embed in result_embeds:
             await ctx.send(embed=embed)
 
-    @named_roll.autocomplete('roll_name')
-    async def roll_name_autocomplete(self,ctx: AutocompleteContext):
+    @named_roll.autocomplete("roll_name")
+    async def roll_name_autocomplete(self, ctx: AutocompleteContext):
         string_option_input = ctx.input_text
-        
+
         result = [
             {"name": saved_roll.name, "value": str(saved_roll.id)}
             for saved_roll in get_by_user(str(ctx.author_id))
-            if string_option_input.lower() in saved_roll.name and saved_roll.is_available(str(ctx.guild_id),str(ctx.channel.parent_id),str(ctx.channel_id))
+            if string_option_input.lower() in saved_roll.name
+            and saved_roll.is_available(
+                str(ctx.guild_id), str(ctx.channel.parent_id), str(ctx.channel_id)
+            )
         ][:10]
         await ctx.send(choices=result)
 
-
-    def create_embeds(self,display_name:str,dice_pool:str):
+    def create_embeds(self, ctx: SlashContext, display_name: str, dice_pool: str):
         result_embeds = []
         dice_description = dice_pool.split("#")[0].split(" ")
-        print(dice_description)
         comment = dice_pool.split("#")[1] if "#" in dice_pool else ""
         dice_results = [
             Parser(description.strip()).build_pool().roll()
             for description in dice_description
             if description.strip()
         ]
-        for dr in dice_results:
-            print(type(dr), dr.description,dr.formatted())
+
         total_successes = sum(
             result.successes
             for result in dice_results
@@ -178,11 +224,19 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         total_sum = sum(
             result.sum * (-1 if isinstance(result, DicePoolExclusionsDifference) else 1)
             for result in dice_results
-            if isinstance( result, (DicePoolExclusionsSum, DicePoolExclusionsDifference) )
+            if isinstance(result, (DicePoolExclusionsSum, DicePoolExclusionsDifference))
         )
         embed = Embed(
-            title=f"Rolling for {display_name}",
-            description=f"Rolling {dice_pool}\nTotal Successes: {total_successes}\nTotal Sum: {total_sum}",
+            title=localizer.translate(
+                ctx.locale, "rolling_for_display_name", display_name=display_name
+            ),
+            description=localizer.translate(
+                ctx.locale,
+                "rolling_dice_poolntotal_successes_total_successesntotal_sum_total_sum",
+                dice_pool=dice_pool,
+                total_successes=total_successes,
+                total_sum=total_sum,
+            ),
             footer=f"{comment}",
         )
         for result in dice_results:
@@ -190,38 +244,63 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
             if len(embed.fields) > 24:
                 result_embeds.append(embed)
                 embed = Embed(
-                    title=f"Rolling for {display_name} (continued)",
-                    description=f"Rolling {dice_pool}\nTotal Successes: {total_successes}\nTotal Sum: {total_sum}",
+                    title=localizer.translate(
+                        ctx.locale, "rolling_for_display_name_continued", display_name=display_name
+                    ),
+                    description=localizer.translate(
+                        ctx.locale,
+                        "rolling_dice_poolntotal_successes_total_successesntotal_sum_total_sum",
+                        dice_pool=dice_pool,
+                        total_successes=total_successes,
+                        total_sum=total_sum,
+                    ),
                     footer=f"{comment}",
                 )
         if len(embed.fields) > 0:
             result_embeds.append(embed)
-        print(f'constructed {len(result_embeds)} embeds')
         return result_embeds
 
     @component_callback("save_complex_pool")
-    async def button_save_complex_pool(self,ctx: ComponentContext):
+    async def button_save_complex_pool(self, ctx: ComponentContext):
         save_modal = Modal(
-            ShortText(label="Name", custom_id="roll_name"),
-            ShortText(label="Definition", custom_id="dice_pool",value=ctx.message.components[0].components[0].custom_id),
-            ShortText(label="Scope (server,category or channel)", custom_id="scope",value='channel'),
-            title="Save this Roll",
+            ShortText(label=localizer.translate(ctx.locale, "name"), custom_id="roll_name"),
+            ShortText(
+                label=localizer.translate(ctx.locale, "definition"),
+                custom_id="dice_pool",
+                value=ctx.message.components[0].components[0].custom_id,
+            ),
+            ShortText(
+                label=localizer.translate(ctx.locale, "scope_servercategory_or_channel"),
+                custom_id="scope",
+                value="channel",
+            ),
+            title=localizer.translate(ctx.locale, "save_this_roll"),
             custom_id="save_complex_roll",
         )
         await ctx.send_modal(modal=save_modal)
 
     @modal_callback("save_complex_roll")
-    async def on_modal_answer(self,ctx: ModalContext, roll_name: str, dice_pool: str,scope:str):
-        if scope == 'server':
+    async def on_modal_answer(self, ctx: ModalContext, roll_name: str, dice_pool: str, scope: str):
+        if scope == "server":
             discord_id = str(ctx.guild_id)
-        elif scope == 'category':
+        elif scope == "category":
             discord_id = str(ctx.channel.parent_id)
         else:
             discord_id = str(ctx.channel_id)
-        db_object = SavedRoll(user_id=str(ctx.author_id),discord_id=discord_id,scope=scope,dice_pool=dice_pool,name=roll_name)
-        with Session(engine,) as session:
+        db_object = SavedRoll(
+            user_id=str(ctx.author_id),
+            discord_id=discord_id,
+            scope=scope,
+            dice_pool=dice_pool,
+            name=roll_name,
+        )
+        with Session(
+            engine,
+        ) as session:
             session.add(db_object)
             session.commit()
         invalidate_cache()
-        await ctx.send("saved",ephemeral=True)
-
+        await ctx.send(
+            localizer.translate(ctx.locale, LocalisedDesc(**localizer.translations("saved"))),
+            ephemeral=True,
+        )

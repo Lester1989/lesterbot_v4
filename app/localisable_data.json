@@ -1,0 +1,750 @@
+{
+    "roll_help_description": {
+        "de": "Zeigt Hilfe für den /roll_complex Befehl an",
+        "en": "Displays help for the /roll_complex command"
+    },
+    "roll_complex_description": {
+        "de": "Würfelt eine Anzahl von Würfeln und zeigt das Ergebnis an siehe /roll_help für mehr Infos",
+        "en": "Rolls a number of dice and displays the result see /roll_help for more info"
+    },
+    "dice_pool_description": {
+        "de": "Die Anzahl der Würfel die geworfen werden sollen",
+        "en": "The dice to roll"
+    },
+    "save_roll_description": {
+        "de": "Speichert einen komplexen Wurf mit einem Namen für dich",
+        "en": "Saves a complex roll with a name for you"
+    },
+    "roll_name_description": {
+        "de": "Ein Name den du diesem Wurf geben möchtest",
+        "en": "a name you would give to this roll"
+    },
+    "named_roll_description": {
+        "de": "Wiederholt einen Wurf den du zuvor gespeichert hast",
+        "en": "reuses a roll previosly saved by you"
+    },
+    "save": {
+        "de": "Speichern",
+        "en": "Save"
+    },
+    "saved": {
+        "de": "gespeichert",
+        "en": "saved"
+    },
+    "rolling_for_display_name": {
+        "de": "Würfele für {display_name}",
+        "en": "Rolling for {display_name}"
+    },
+    "rolling_dice_poolntotal_successes_total_successesntotal_sum_total_sum": {
+        "de": "Würfele {dice_pool}\nGesamterfolge: {total_successes}\nGesamtsumme: {total_sum}",
+        "en": "Rolling {dice_pool}\nTotal Successes: {total_successes}\nTotal Sum: {total_sum}"
+    },
+    "rolling_for_display_name_continued": {
+        "de": "Würfele für {display_name} (fortgesetzt)",
+        "en": "Rolling for {display_name} (continued)"
+    },
+    "name": {
+        "de": "Name",
+        "en": "Name"
+    },
+    "definition": {
+        "de": "Definition",
+        "en": "Definition"
+    },
+    "scope_servercategory_or_channel": {
+        "de": "Geltungsbereich (Server, Kategorie oder Kanal)",
+        "en": "Scope (server,category or channel)"
+    },
+    "save_this_roll": {
+        "de": "Diesen Wurf speichern",
+        "en": "Save this Roll"
+    },
+    "initiative_help_description": {
+        "de": "Zeigt Hilfe für die Befehle zum Initiative-Tracking an",
+        "en": "shows help for the commands about initiatve tracking"
+    },
+    "initiative_description": {
+        "de": "Startet das Initiative-Tracking in diesem Kanal",
+        "en": "start initiative tracking in this channel"
+    },
+    "participants_description": {
+        "de": "Die Teilnehmer:in der Initiative",
+        "en": "you can provide an initial ordered list of names e.g. Robin,Alex,NPC1"
+    },
+    "initiative_show_description": {
+        "de": "Zeigt die aktuelle Initiative-Liste an",
+        "en": "shows the initiative list without changing it"
+    },
+    "initiative_insert_before_description": {
+        "de": "Erstellt oder bewegt eine:n Teilnehmer:in vor eine:n andere:n Teilnehmer:in",
+        "en": "adds or moves a participant before another participant"
+    },
+    "name_description": {
+        "de": "Der Name des Charakters",
+        "en": "The name of the character"
+    },
+    "name_after_description": {
+        "de": "Der Name des Charakters VOR dem der neue Charakter eingefügt werden soll",
+        "en": "name to add before"
+    },
+    "initiative_insert_after_description": {
+        "de": "Erstellt oder bewegt eine:n Teilnehmer:in hinter eine:n andere:n Teilnehmer:in",
+        "en": "adds or moves a participant after another participant"
+    },
+    "name_before_description": {
+        "de": "Der Name des Charakters NACH dem der neue Charakter eingefügt werden soll",
+        "en": "name to add after"
+    },
+    "initiative_insert_first_description": {
+        "de": "Erstellt oder bewegt eine:n Teilnehmer:in an erste Stelle",
+        "en": "adds or moves a participant at first place"
+    },
+    "initiative_insert_last_description": {
+        "de": "Erstellt oder bewegt eine:n Teilnehmer:in an letzte Stelle",
+        "en": "adds or moves a participant at first place"
+    },
+    "initiative_remove_description": {
+        "de": "Entfernt eine:n Teilnehmer:in aus der Initiative-Reihenfolge",
+        "en": "remove one participant from initiative order"
+    },
+    "initiative_delete_description": {
+        "de": "Löscht das Initiative-Tracking",
+        "en": "deletes the initiative tracking"
+    },
+    "confirmation_description": {
+        "de": "Tippe YES in Großbuchstaben um die Löschung zu bestätigen",
+        "en": "type YES to confirm deletion"
+    },
+    "you_need_to_say_yes_all_caps_to_confirm_deletion": {
+        "de": "Du musst YES (alles in Großbuchstaben) sagen um die Löschung zu bestätigen",
+        "en": "you need to say YES (all caps) to confirm deletion"
+    },
+    "initiative_removed": {
+        "de": "Initiative entfernt",
+        "en": "initiative removed"
+    },
+    "initiative_tracker": {
+        "de": "Initiative-Tracker",
+        "en": "Initiative Tracker"
+    },
+    "empty__use_insert_commands_to_fill_the_slots": {
+        "de": "LEER -> benutze die Einfüge-Befehle um die Slots zu füllen",
+        "en": "EMPTY -> use insert commands to fill the slots"
+    },
+    "roll_successes_description": {
+        "de": "Würfelt eine Anzahl von Würfeln und zählt die Anzahl der Erfolge",
+        "en": "Rolls a number of dice and counts the number of successes"
+    },
+    "number_description": {
+        "de": "Die Anzahl der Würfel die geworfen werden sollen (Standard 1)",
+        "en": "The number of dice to roll (default 1)"
+    },
+    "sides_description": {
+        "de": "Die Anzahl der Seiten auf jedem Würfel (Standard 6)",
+        "en": "The number of sides on each dice (default 6)"
+    },
+    "low_subtracting_description": {
+        "de": "Eine Gewürfelte 1 verringert die Anzahl der Erfolge? (Standard False)",
+        "en": "Do we subtract 1 from the number of successes for each dice that rolled a 1? (default False)"
+    },
+    "dice_modifier_description": {
+        "de": "Der Modifikator der zu jedem Würfelwurf hinzugefügt wird (Standard 0)",
+        "en": "The modifier to add to each dice roll (default 0)"
+    },
+    "pool_modifier_description": {
+        "de": "Der Modifikator der zu der Gesamtanzahl der Würfel hinzugefügt wird (Standard 0)",
+        "en": "The modifier to add to the final number of successes (default 0)"
+    },
+    "threshold_description": {
+        "de": "Der Schwellenwert mit dem die Würfelergebnisse verglichen werden (Standard 4)",
+        "en": "The threshold value to compare the dice rolls to (default 4)"
+    },
+    "roll_sum_description": {
+        "de": "Würfelt eine Anzahl von Würfeln und gibt die Summe der Ergebnisse zurück",
+        "en": "Rolls a number of dice and returns the sum of the results"
+    },
+    "roll_successes": {
+        "de": "Erfolge würfeln",
+        "en": "Roll Successes"
+    },
+    "resultsuccesses_erfolge_fehlschlag_if_resultsuccesses__0_else_": {
+        "de": "{resultsuccesses} Erfolge{_fehlschlag_if_resultsuccesses__0_else_}",
+        "en": "{resultsuccesses} Success{_fehlschlag_if_resultsuccesses__0_else_}"
+    },
+    "_fehlschlag": {
+        "de": " (Fehlschlag)",
+        "en": " (Failure)"
+    },
+    "roll_sum": {
+        "de": "Summe würfeln",
+        "en": "Roll Sum"
+    },
+    "start_group_description": {
+        "de": "Erstellt eine Gruppe, setzt Standard-Einstellungen und macht dich GM",
+        "en": "Opens a group, creates default settings and makes you GM"
+    },
+    "rule_system_description": {
+        "de": "Das Regelwerk das benutzt werden soll",
+        "en": "The rule system to use"
+    },
+    "add_player_description": {
+        "de": "Fügt eine:n Spieler:in zur Gruppe hinzu",
+        "en": "Joins a player to the group"
+    },
+    "player_description": {
+        "de": "Spieler:in die hinzugefügt werden soll",
+        "en": "The player to add"
+    },
+    "remove_player_description": {
+        "de": "Entfernt eine:n Spieler:in aus der Gruppe",
+        "en": "Removes a player from the group"
+    },
+    "add_gm_description": {
+        "de": "Macht eine:n Spieler:in GM",
+        "en": "Makes a player GM"
+    },
+    "resign_gm_description": {
+        "de": "Entfernt GM-Status von dir",
+        "en": "Removes GM status from you"
+    },
+    "show_group_description": {
+        "de": "Zeigt Informationen über die Gruppe an",
+        "en": "Shows group info"
+    },
+    "set_rule_system_description": {
+        "de": "Setzt das Regelwerk das benutzt werden soll",
+        "en": "Sets the rule system to use"
+    },
+    "creation_finished_description": {
+        "de": "Beendet die freie Charaktererstellung und startet das Spiel",
+        "en": "Stops free character creation and starts the game"
+    },
+    "create_character_description": {
+        "de": "Erstellt einen Charakterbogen",
+        "en": "Creates a character sheet header"
+    },
+    "concept_description": {
+        "de": "Kurze Beschreibung des Charakters",
+        "en": "Short description of the character"
+    },
+    "description_description": {
+        "de": "Lange Beschreibung des Charakters",
+        "en": "Long description of the character"
+    },
+    "update_character_description": {
+        "de": "Aktualisiert einen Charakterbogen",
+        "en": "Updates a character sheet header"
+    },
+    "image_url_description": {
+        "de": "Bild das für den Charakter angezeigt werden soll",
+        "en": "Image to show for the character"
+    },
+    "delete_character_description": {
+        "de": "Löscht einen Charakterbogen und alle Einträge",
+        "en": "Deletes a character sheet header and all entries"
+    },
+    "confirm_description": {
+        "de": "Tippe 'confirm' um die Löschung zu bestätigen, kann nicht rückgängig gemacht werden",
+        "en": "Type 'confirm' to confirm the deletion, cannot be undone"
+    },
+    "show_character_description": {
+        "de": "Zeigt einen Charakterbogen an",
+        "en": "Shows a character sheet header"
+    },
+    "add_attribute_description": {
+        "de": "Fügt einen Attributwert zum Charakterbogen hinzu",
+        "en": "Adds an attribute to a character sheet"
+    },
+    "attribute_name_description": {
+        "de": "Der Name des Attributs",
+        "en": "The name of the attribute"
+    },
+    "attribute_value_description": {
+        "de": "Der Wert des Attributs",
+        "en": "The value of the attribute"
+    },
+    "override_description": {
+        "de": "Überschreibt ein bestehendes Attribut",
+        "en": "Overrides an existing attribute"
+    },
+    "list_pending_changes_description": {
+        "de": "Listet alle ausstehenden Änderungen für einen Charakterbogen auf",
+        "en": "Lists pending changes for a character sheet"
+    },
+    "approve_all_changes_description": {
+        "de": "Genehmigt alle ausstehenden Änderungen für einen Charakterbogen",
+        "en": "Approves all pending changes for a character sheet"
+    },
+    "reject_all_changes_description": {
+        "de": "Lehnt alle ausstehenden Änderungen für einen Charakterbogen ab",
+        "en": "Rejects all pending changes for a character sheet"
+    },
+    "reason_description": {
+        "de": "Der Grund für die Ablehnung",
+        "en": "The reason for the rejection"
+    },
+    "approve_change_description": {
+        "de": "Genehmigt eine ausstehende Änderung für einen Charakterbogen",
+        "en": "Approves a pending change for a character sheet"
+    },
+    "reject_change_description": {
+        "de": "Lehnt eine ausstehende Änderung für einen Charakterbogen ab",
+        "en": "Rejects a pending change for a character sheet"
+    },
+    "gm_roll_initiative_description": {
+        "de": "Würfelt Initiative für alle Spieler:innen und GMs",
+        "en": "Rolls initiative for all players and GMs"
+    },
+    "nsc_slots_description": {
+        "de": "Die Anzahl der NSC-Slots wenn mehr als 1",
+        "en": "The number of NPC slots if more than 1"
+    },
+    "npc_roll_description": {
+        "de": "Der Wurf für die NSCs (siehe /roll_help)",
+        "en": "The roll for the NPCs (see /roll_help)"
+    },
+    "hidden_description": {
+        "de": "Sollen die NSC-Würfe vor den Spieler:innen versteckt werden?",
+        "en": "If the rolls should be hidden from players"
+    },
+    "group_ctxchannelcategoryname_forming_if_settingsstate__groupstatecreating_else_": {
+        "de": "Gruppe {ctxchannelcategoryname} {forming_if_settingsstate__groupstatecreating_else_}",
+        "en": "Group {ctxchannelcategoryname} {forming_if_settingsstate__groupstatecreating_else_}"
+    },
+    "forming": {
+        "de": "(wird erstellt)",
+        "en": "(forming)"
+    },
+    "rule_system": {
+        "de": "Regelwerk",
+        "en": "Rule System"
+    },
+    "gms": {
+        "de": "GMs",
+        "en": "GMs"
+    },
+    "players": {
+        "de": "Spieler:innen",
+        "en": "Players"
+    },
+    "invite_players_with_add_player": {
+        "de": "Lade Spieler:innen mit /add_player ein",
+        "en": "invite players with /add_player"
+    },
+    "character_changes": {
+        "de": "Charakteränderungen",
+        "en": "Character Changes"
+    },
+    "need_gm_approval_after_start": {
+        "de": "Benötigt GM-Genehmigung nach Start",
+        "en": "Need GM approval after start"
+    },
+    "approved_by_default": {
+        "de": "Standardmäßig genehmigt",
+        "en": "Approved by default"
+    },
+    "hidden_rolls": {
+        "de": "Versteckte Würfe",
+        "en": "Hidden Rolls"
+    },
+    "allowed": {
+        "de": "Erlaubt",
+        "en": "Allowed"
+    },
+    "web_interface": {
+        "de": "Web-Interface",
+        "en": "Web Interface"
+    },
+    "coming_soon": {
+        "de": "Kommt bald",
+        "en": "Coming soon"
+    },
+    "group_created": {
+        "de": "Gruppe erstellt",
+        "en": "Group created"
+    },
+    "player_added": {
+        "de": "Spieler:in hinzugefügt",
+        "en": "Player added"
+    },
+    "player_removed": {
+        "de": "Spieler:in entfernt",
+        "en": "Player removed"
+    },
+    "player_made_gm": {
+        "de": "Spieler:in GM gemacht",
+        "en": "Player made GM"
+    },
+    "gm_status_removed": {
+        "de": "GM-Status entfernt",
+        "en": "GM status removed"
+    },
+    "rule_system_set": {
+        "de": "Regelwerk gesetzt",
+        "en": "Rule system set"
+    },
+    "creation_finished": {
+        "de": "Erstellung beendet",
+        "en": "Creation finished"
+    },
+    "description": {
+        "de": "Beschreibung",
+        "en": "Description"
+    },
+    "player": {
+        "de": "Spieler:in",
+        "en": "Player"
+    },
+    "charactername_continued": {
+        "de": "{charactername} (fortgesetzt)",
+        "en": "{charactername} (continued)"
+    },
+    "character_created": {
+        "de": "Charakter erstellt",
+        "en": "Character created"
+    },
+    "character_updated": {
+        "de": "Charakter aktualisiert",
+        "en": "Character updated"
+    },
+    "deletion_not_confirmed": {
+        "de": "Löschung nicht bestätigt",
+        "en": "Deletion not confirmed"
+    },
+    "character_deleted": {
+        "de": "Charakter gelöscht",
+        "en": "Character deleted"
+    },
+    "attribute": {
+        "de": "Attribut",
+        "en": "Attribute"
+    },
+    "skill": {
+        "de": "Fertigkeit",
+        "en": "Skill"
+    },
+    "specialty": {
+        "de": "Spezialisierung",
+        "en": "Specialty"
+    },
+    "general": {
+        "de": "Allgemein",
+        "en": "General"
+    },
+    "attribute_added": {
+        "de": "Attribut hinzugefügt",
+        "en": "Attribute added"
+    },
+    "attribute_added_waiting_for_approval_by_your_gm": {
+        "de": "Attribut hinzugefügt, wartet auf Genehmigung durch deinen GM",
+        "en": "Attribute added, waiting for approval by your gm"
+    },
+    "no_pending_changes": {
+        "de": "Keine ausstehenden Änderungen",
+        "en": "No pending changes"
+    },
+    "pending_changes_for_name": {
+        "de": "Ausstehende Änderungen für {name}",
+        "en": "Pending changes for {name}"
+    },
+    "approve_them_all_with_approve_all_changes_or_reject_all_changesnn_or_handle_them_one_by_one_with_approve_change_or_reject_change": {
+        "de": "Genehmige sie alle mit /approve_all_changes oder /reject_all_changes\n\n Oder bearbeite sie einzeln mit /approve_change oder /reject_change",
+        "en": "approve them all with /approve_all_changes or /reject_all_changes\n\n Or handle them one by one with /approve_change or /reject_change"
+    },
+    "all_change_count_changes_approved_for_name": {
+        "de": "Alle {change_count} Änderungen genehmigt für {name}",
+        "en": "All {change_count} changes approved for {name}"
+    },
+    "all_change_count_changes_rejected_for_name": {
+        "de": "Alle {change_count} Änderungen abgelehnt für {name}",
+        "en": "All {change_count} changes rejected for {name}"
+    },
+    "change_approved_for_name": {
+        "de": "Änderung genehmigt für {name}",
+        "en": "Change approved for {name}"
+    },
+    "no_pending_change_found": {
+        "de": "Keine ausstehende Änderung gefunden",
+        "en": "No pending change found"
+    },
+    "change_rejected_for_name": {
+        "de": "Änderung abgelehnt für {name}",
+        "en": "Change rejected for {name}"
+    },
+    "no_initiative_rule_found_for_settingsrule_system": {
+        "de": "Keine Initiative-Regel gefunden für {settingsrule_system}",
+        "en": "No initiative rule found for {settingsrule_system}"
+    },
+    "please_provide_a_roll_for_the_npcs": {
+        "de": "Bitte gib einen Wurf für die NSCs an",
+        "en": "Please provide a roll for the NPCs"
+    },
+    "initiative_rollsn": {
+        "de": "**Initiative-Würfe:**\n",
+        "en": "**Initiative Rolls**\n"
+    },
+    "missing_values_for_charactername__joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys": {
+        "de": "Fehlende Werte für {charactername}: {_joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys}",
+        "en": "Missing values for {charactername}: {_joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys}"
+    },
+    "npc_i1": {
+        "de": "NSC {i1}",
+        "en": "NPC {i1}"
+    },
+    "btw_new_description": {
+        "de": "Erstellt einen zufälligen NSC für Beyond the Wall",
+        "en": "Creates a random NPC for Beyond the Wall"
+    },
+    "mensch_description": {
+        "de": "Kann der NSC ein Mensch sein",
+        "en": "can the NPC be a human"
+    },
+    "zwerg_description": {
+        "de": "Kann der NSC ein Zwerg sein",
+        "en": "can the NPC be a dwarf"
+    },
+    "elf_description": {
+        "de": "Kann der NSC ein Elf sein",
+        "en": "can the NPC be an elf"
+    },
+    "ork_description": {
+        "de": "Kann der NSC ein Ork sein",
+        "en": "can the NPC be an orc"
+    },
+    "goblin_description": {
+        "de": "Kann der NSC ein Goblin sein",
+        "en": "can the NPC be a goblin"
+    },
+    "oger_description": {
+        "de": "Kann der NSC ein Oger sein",
+        "en": "can the NPC be an ogre"
+    },
+    "nymph_description": {
+        "de": "Kann der NSC ein Nymph sein",
+        "en": "can the NPC be a nymph"
+    },
+    "count_description": {
+        "de": "Die Anzahl der NSCs die erstellt werden sollen",
+        "en": "The number of NPCs to create"
+    },
+    "mensch": {
+        "de": "mensch",
+        "en": "human"
+    },
+    "zwerg": {
+        "de": "zwerg",
+        "en": "dwarf"
+    },
+    "elf": {
+        "de": "elf",
+        "en": "elf"
+    },
+    "ork": {
+        "de": "ork",
+        "en": "orc"
+    },
+    "goblin": {
+        "de": "goblin",
+        "en": "goblin"
+    },
+    "oger": {
+        "de": "oger",
+        "en": "ogre"
+    },
+    "nymph": {
+        "de": "nymph",
+        "en": "nymph"
+    },
+    "unbekannt": {
+        "de": "Unbekannt",
+        "en": "Unknown"
+    },
+    "species": {
+        "de": "Spezies",
+        "en": "Species"
+    },
+    "pläne": {
+        "de": "Pläne",
+        "en": "plans"
+    },
+    "ängste": {
+        "de": "Ängste",
+        "en": "fears"
+    },
+    "the_exploding_behavior_for_dice_that_roll_the_maximum_value_default_none": {
+        "de": "Könnte der Würfel explodieren wenn er die maximale Augenzahl würfelt (Standard Nein)",
+        "en": "The exploding behavior for dice that roll the maximum value (default None)"
+    },
+    "none": {
+        "de": "Nein",
+        "en": "None"
+    },
+    "once": {
+        "de": "Einmal",
+        "en": "Once"
+    },
+    "forever": {
+        "de": "Immer wieder",
+        "en": "Forever"
+    },
+    "würfelpool": {
+        "de": "Würfelpool:",
+        "en": "Dice Pool:"
+    },
+    "numberwsides": {
+        "de": "{number}W{sides}",
+        "en": "{number}D{sides}"
+    },
+    "ergebnis": {
+        "de": "Ergebnis:",
+        "en": "Result:"
+    },
+    "bonuswürfel": {
+        "de": "Bonuswürfel:",
+        "en": "Bonus Dice:"
+    },
+    "gekaufte_erfolge": {
+        "de": "Gekaufte Erfolge:",
+        "en": "Bought Successes:"
+    },
+    "bonuswert": {
+        "de": "Bonuswert:",
+        "en": "Bonus Value:"
+    },
+    "should_the_roll_be_available_serverwide_categorywide_or_just_in_this_channeldefault": {
+        "de": "Soll der Wurf serverweit, kategorieweit oder nur in diesem Kanal verfügbar sein (Standard)",
+        "en": "should the roll be available server-wide, category-wide or just in this channel(default)"
+    },
+    "serverwide": {
+        "de": "serverweit",
+        "en": "serverwide"
+    },
+    "categorywide": {
+        "de": "kategorieweit",
+        "en": "categorywide"
+    },
+    "channelwide": {
+        "de": "kanalweit",
+        "en": "channelwide"
+    },
+    "ww_description": {
+        "de": "Würfelt eine Anzahl von Würfeln für Werwolf 20.Edition",
+        "en": "Rolls a number of dice for Werwolf 20th edition"
+    },
+    "difficulty_description": {
+        "de": "Die Schwierigkeit des Wurfs (Standard 6)",
+        "en": "The difficulty of the roll (default 6)"
+    },
+    "ones_cancel_description": {
+        "de": "Sollen Einsen storniert werden? (Standard Ja)",
+        "en": "Do we cancel ones? (default True)"
+    },
+    "specialty_description": {
+        "de": "Sollen Spezialwürfel hinzugefügt werden? (Standard Nein)",
+        "en": "Do we add specialty dice? (default False)"
+    },
+    "spent_willpower_description": {
+        "de": "Wurde Willenskraft ausgegeben? (Standard Nein)",
+        "en": "Do we add Success for Willpower? (default False)"
+    },
+    "show_gift_description": {
+        "de": "Zeigt die Beschreibung der Gabe an",
+        "en": "Show gift description"
+    },
+    "gift_name_description": {
+        "de": "Der Name der Gabe",
+        "en": "The name of the gift"
+    },
+    "upload_gifts_description": {
+        "de": "Lädt Gabe aus einer CSV-Datei hoch",
+        "en": "Upload gifts from a CSV file"
+    },
+    "file_description": {
+        "de": "Die CSV-Datei die hochgeladen werden soll",
+        "en": "The CSV file to upload"
+    },
+    "list_gifts_for_description": {
+        "de": "Listet alle Gaben auf",
+        "en": "List all gifts"
+    },
+    "rolling_number_dice_with_difficulty_difficulty": {
+        "de": "Würfele {number} Würfel mit Schwierigkeit {difficulty}",
+        "en": "Rolling {number} dice with difficulty {difficulty}"
+    },
+    "dice_results": {
+        "de": "Würfelergebnisse",
+        "en": "Dice Results"
+    },
+    "successes": {
+        "de": "Erfolge",
+        "en": "Successes"
+    },
+    "could_not_find_gift_gift_name": {
+        "de": "Konnte Gabe {gift_name} nicht finden",
+        "en": "Could not find gift {gift_name}"
+    },
+    "system": {
+        "de": "System",
+        "en": "System"
+    },
+    "available_for": {
+        "de": "Verfügbar für",
+        "en": "Available for"
+    },
+    "uploaded_lenselfgifts_gifts": {
+        "de": "Hochgeladen {lenselfgifts} Gaben",
+        "en": "Uploaded {lenselfgifts} gifts"
+    },
+    "the_auspice_to_filter_for": {
+        "de": "Das Vorzeichen nach dem gefiltert werden soll",
+        "en": "The auspice to filter for"
+    },
+    "the_tribe_to_filter_for": {
+        "de": "Der Stamm nach dem gefiltert werden soll",
+        "en": "The tribe to filter for"
+    },
+    "the_breed_to_filter_for": {
+        "de": "Die Brut nach der gefiltert werden soll",
+        "en": "The breed to filter for"
+    },
+    "the_rank_to_filter_for": {
+        "de": "Der Rang nach dem gefiltert werden soll",
+        "en": "The rank to filter for"
+    },
+    "gifts_part_counter": {
+        "de": "Gaben {part_counter}",
+        "en": "Gifts {part_counter}"
+    },
+    "no_gifts_found_for_this_filter_lenselfgifts_gifts_total": {
+        "de": "Keine Gaben für diesen Filter gefunden ({lenselfgifts} Gaben insgesamt)",
+        "en": "No gifts found for this filter ({lenselfgifts} Gifts Total)"
+    },
+    "could_not_find_gift_ctxcustom_id": {
+        "de": "Konnte Gabe {ctxcustom_id} nicht finden",
+        "en": "Could not find gift {ctxcustom_id}"
+    },
+    "attributes": {
+        "de": "Attribute",
+        "en": "Attributes"
+    },
+    "skills": {
+        "de": "Fertigkeiten",
+        "en": "Skills"
+    },
+    "specialties": {
+        "de": "Spezialisierungen",
+        "en": "Specialties"
+    },
+    "unknown": {
+        "de": "Unbekannt",
+        "en": "Unknown"
+    },
+    "the_type_of_the_attribute": {
+        "de": "Der Typ des Attributs",
+        "en": "The type of the attribute"
+    },
+    "wait_for_your_gm_to_approve_them": {
+        "de": "Warte darauf dass dein GM sie genehmigt",
+        "en": "wait for your GM to approve them"
+    }
+}

@@ -9,7 +9,10 @@ from interactions import (
     ComponentContext,
     Embed,
     Extension,
+    LocalisedDesc,
     OptionType,
+    SlashCommandChoice,
+    SlashCommandOption,
     SlashContext,
     component_callback,
     slash_command,
@@ -17,6 +20,7 @@ from interactions import (
     spread_to_rows,
 )
 
+import app.localizer as localizer
 from app.library.polydice import (
     ExplodingBehavior,
     format_dice_success_result,
@@ -36,34 +40,34 @@ class WerewolfW20(Extension):
         self.gift_names = [gift.name.lower() for gift in self.gifts]
         print("Starting Werewolf Extension")
 
-    @slash_command(name="ww", description="Rolls a number of dice for Werwolf 20th edition")
+    @slash_command(name="ww", description=LocalisedDesc(**localizer.translations("ww_description")))
     @slash_option(
         name="number",
-        description="The number of dice to roll (default 1)",
+        description=LocalisedDesc(**localizer.translations("number_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="difficulty",
-        description="The difficulty of the roll (default 6)",
+        description=LocalisedDesc(**localizer.translations("difficulty_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="ones_cancel",
-        description="Do we cancel ones? (default True)",
+        description=LocalisedDesc(**localizer.translations("ones_cancel_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
     @slash_option(
         name="specialty",
-        description="Do we add specialty dice? (default False)",
+        description=LocalisedDesc(**localizer.translations("specialty_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
     @slash_option(
         name="spent_willpower",
-        description="Do we add Success for Willpower? (default False)",
+        description=LocalisedDesc(**localizer.translations("spent_willpower_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
@@ -94,11 +98,16 @@ class WerewolfW20(Extension):
         else:
             color = 0x0000FF
         embed = Embed(
-            title=f"Rolling {number} dice with difficulty {difficulty}",
+            title=localizer.translate(
+                ctx.locale,
+                "rolling_number_dice_with_difficulty_difficulty",
+                number=number,
+                difficulty=difficulty,
+            ),
             color=color,
         )
         embed.add_field(
-            name="Dice Results",
+            name=localizer.translate(ctx.locale, "dice_results"),
             value="\n".join(
                 [
                     format_dice_success_result(dice_result, difficulty, ones_cancel)
@@ -108,14 +117,19 @@ class WerewolfW20(Extension):
             inline=False,
         )
         embed.add_field(
-            name="Successes", value=f"{result.successes} + {result.pool_modifier}", inline=False
+            name=localizer.translate(ctx.locale, "successes"),
+            value=f"{result.successes} + {result.pool_modifier}",
+            inline=False,
         )
         await ctx.send(embed=embed)
 
-    @slash_command(name="show_gift", description="Show gift description")
+    @slash_command(
+        name="show_gift",
+        description=LocalisedDesc(**localizer.translations("show_gift_description")),
+    )
     @slash_option(
         name="gift_name",
-        description="The name of the gift",
+        description=LocalisedDesc(**localizer.translations("gift_name_description")),
         required=True,
         opt_type=OptionType.STRING,
         autocomplete=True,
@@ -127,11 +141,23 @@ class WerewolfW20(Extension):
     async def display_gift(self, ctx: SlashContext, gift_name: str):
         gift = next((gift for gift in self.gifts if gift.name.lower() == gift_name.lower()), None)
         if gift is None:
-            await ctx.send(f"Could not find gift {gift_name}")
+            await ctx.send(
+                localizer.translate(
+                    ctx.locale, "could_not_find_gift_gift_name", gift_name=gift_name
+                )
+            )
             return
         embed = Embed(title=gift.name, description=gift.description_fluff, color=0xFFFFFF)
-        embed.add_field(name="System", value=gift.description_system, inline=False)
-        embed.add_field(name="Available for", value=gift.available_for, inline=False)
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "system"),
+            value=gift.description_system,
+            inline=False,
+        )
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "available_for"),
+            value=gift.available_for,
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
     @show_gift.autocomplete("gift_name")
@@ -139,16 +165,19 @@ class WerewolfW20(Extension):
         string_option_input = ctx.input_text
 
         result = [
-            {"name": gift_name, "value": gift_name}
+            SlashCommandChoice(name=gift_name, value=gift_name)
             for gift_name in self.gift_names
             if string_option_input.lower() in gift_name
         ][:10]
         await ctx.send(choices=result)
 
-    @slash_command(name="upload_gifts", description="Upload gifts from a CSV file")
+    @slash_command(
+        name="upload_gifts",
+        description=LocalisedDesc(**localizer.translations("upload_gifts_description")),
+    )
     @slash_option(
         name="file",
-        description="The CSV file to upload",
+        description=LocalisedDesc(**localizer.translations("file_description")),
         required=True,
         opt_type=OptionType.ATTACHMENT,
     )
@@ -157,7 +186,11 @@ class WerewolfW20(Extension):
         content = await self.download_file(file.url, file.filename)
         self.gifts = parse_json(content)
         self.gift_names = [gift.name.lower() for gift in self.gifts]
-        await ctx.send(f"Uploaded {len(self.gifts)} gifts")
+        await ctx.send(
+            localizer.translate(
+                ctx.locale, "uploaded_lenselfgifts_gifts", lenselfgifts=len(self.gifts)
+            )
+        )
 
     async def download_file(self, url: str, file_path: str):
         async with aiohttp.ClientSession() as session:
@@ -171,65 +204,70 @@ class WerewolfW20(Extension):
         with open(file_path, "r", encoding="utf8") as f:
             return f.read()
 
-    @slash_command(name="list_gifts_for", description="List all gifts")
+    @slash_command(
+        name="list_gifts_for",
+        description=LocalisedDesc(**localizer.translations("list_gifts_for_description")),
+    )
     @slash_option(
         name="auspice",
-        description="The auspice to filter for",
+        description=LocalisedDesc(**localizer.translations("the_auspice_to_filter_for")),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
-            {"name": "Ahroun", "value": "Ahroun"},
-            {"name": "Galliard", "value": "Galliard"},
-            {"name": "Philodox", "value": "Philodox"},
-            {"name": "Theurge", "value": "Theurge"},
-            {"name": "Ragabash", "value": "Ragabash"},
+            SlashCommandChoice(name="Ahroun", value="Ahroun"),
+            SlashCommandChoice(name="Galliard", value="Galliard"),
+            SlashCommandChoice(name="Philodox", value="Philodox"),
+            SlashCommandChoice(name="Theurge", value="Theurge"),
+            SlashCommandChoice(name="Ragabash", value="Ragabash"),
         ],
     )
     @slash_option(
         name="tribe",
-        description="The tribe to filter for",
+        description=LocalisedDesc(**localizer.translations("the_tribe_to_filter_for")),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
-            {"name": "Fianna", "value": "Fianna"},
-            {"name": "Glaswandler", "value": "Glaswandler"},
-            {"name": "Kinder Gaias", "value": "Kinder Gaias"},
-            {"name": "Knochenbeißer", "value": "Knochenbeißer"},
-            {"name": "Nachfahren des Fenris", "value": "Nachfahren des Fenris"},
-            {"name": "Rote Klauen", "value": "Rote Klauen"},
-            {"name": "Schattenlords", "value": "Schattenlords"},
-            {"name": "Schwarze Furien", "value": "Schwarze Furien"},
-            {"name": "Silberfänge", "value": "Silberfänge"},
-            {"name": "Sternenträumer", "value": "Sternenträumer"},
-            {"name": "Stille Wanderer", "value": "Stille Wanderer"},
-            {"name": "Uktena", "value": "Uktena"},
-            {"name": "Wendigo", "value": "Wendigo"},
-            {"name": "Tänzer der schwarzen Spirale", "value": "Tänzer der schwarzen Spirale"},
+            SlashCommandChoice(name="Fianna", value="Fianna"),
+            SlashCommandChoice(name="Glaswandler", value="Glaswandler"),
+            SlashCommandChoice(name="Kinder Gaias", value="Kinder Gaias"),
+            SlashCommandChoice(name="Knochenbeißer", value="Knochenbeißer"),
+            SlashCommandChoice(name="Nachfahren des Fenris", value="Nachfahren des Fenris"),
+            SlashCommandChoice(name="Rote Klauen", value="Rote Klauen"),
+            SlashCommandChoice(name="Schattenlords", value="Schattenlords"),
+            SlashCommandChoice(name="Schwarze Furien", value="Schwarze Furien"),
+            SlashCommandChoice(name="Silberfänge", value="Silberfänge"),
+            SlashCommandChoice(name="Sternenträumer", value="Sternenträumer"),
+            SlashCommandChoice(name="Stille Wanderer", value="Stille Wanderer"),
+            SlashCommandChoice(name="Uktena", value="Uktena"),
+            SlashCommandChoice(name="Wendigo", value="Wendigo"),
+            SlashCommandChoice(
+                name="Tänzer der schwarzen Spirale", value="Tänzer der schwarzen Spirale"
+            ),
         ],
     )
     @slash_option(
         name="breed",
-        description="The breed to filter for",
+        description=LocalisedDesc(**localizer.translations("the_breed_to_filter_for")),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
-            {"name": "Menschling", "value": "Menschling"},
-            {"name": "Lupus", "value": "Lupus"},
-            {"name": "Metis", "value": "Metis"},
+            SlashCommandChoice(name="Menschling", value="Menschling"),
+            SlashCommandChoice(name="Lupus", value="Lupus"),
+            SlashCommandChoice(name="Metis", value="Metis"),
         ],
     )
     @slash_option(
         name="rank",
-        description="The rank to filter for",
+        description=LocalisedDesc(**localizer.translations("the_rank_to_filter_for")),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
-            {"name": "Cliath", "value": "Cliath"},
-            {"name": "Pflegling", "value": "Pflegling"},
-            {"name": "Adren", "value": "Adren"},
-            {"name": "Athro", "value": "Athro"},
-            {"name": "Ältester", "value": "Ältester"},
-            {"name": "Legende", "value": "Legende"},
+            SlashCommandChoice(name="Cliath", value="Cliath"),
+            SlashCommandChoice(name="Pflegling", value="Pflegling"),
+            SlashCommandChoice(name="Adren", value="Adren"),
+            SlashCommandChoice(name="Athro", value="Athro"),
+            SlashCommandChoice(name="Ältester", value="Ältester"),
+            SlashCommandChoice(name="Legende", value="Legende"),
         ],
     )
     async def list_gifts_for(
@@ -265,14 +303,28 @@ class WerewolfW20(Extension):
                 print(f"Added {gift.name}")
                 if len(buttons) >= 25:
                     print(f"Sent {part_counter} with {len(buttons)} buttons")
-                    await ctx.send(f"Gifts {part_counter}", components=spread_to_rows(*buttons))
+                    await ctx.send(
+                        localizer.translate(
+                            ctx.locale, "gifts_part_counter", part_counter=part_counter
+                        ),
+                        components=spread_to_rows(*buttons),
+                    )
                     buttons = []
                     part_counter += 1
         if len(buttons) > 0:
-            await ctx.send(f"Gifts {part_counter}", components=spread_to_rows(*buttons))
+            await ctx.send(
+                localizer.translate(ctx.locale, "gifts_part_counter", part_counter=part_counter),
+                components=spread_to_rows(*buttons),
+            )
             part_counter += 1
         if part_counter == 1:
-            await ctx.send(f"No gifts found for this filter ({len(self.gifts)} Gifts Total)")
+            await ctx.send(
+                localizer.translate(
+                    ctx.locale,
+                    "no_gifts_found_for_this_filter_lenselfgifts_gifts_total",
+                    lenselfgifts=len(self.gifts),
+                )
+            )
 
     @component_callback(regex_pattern)
     async def show_gift_callback(self, ctx: ComponentContext):
@@ -281,4 +333,8 @@ class WerewolfW20(Extension):
             gift_name = match.group(1)
             await self.display_gift(ctx, gift_name)
         else:
-            await ctx.send(f"Could not find gift {ctx.custom_id}")
+            await ctx.send(
+                localizer.translate(
+                    ctx.locale, "could_not_find_gift_ctxcustom_id", ctxcustom_id=ctx.custom_id
+                )
+            )

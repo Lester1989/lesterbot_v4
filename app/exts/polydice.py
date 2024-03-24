@@ -1,6 +1,8 @@
 from interactions import (
     Embed,
     Extension,
+    LocalisedDesc,
+    LocalisedName,
     OptionType,
     SlashCommandChoice,
     SlashContext,
@@ -8,6 +10,7 @@ from interactions import (
     slash_option,
 )
 
+import app.localizer as localizer
 from app.library.polydice import (
     DiceResult,
     ExplodingBehavior,
@@ -24,52 +27,63 @@ class PolyDice(Extension):
 
     @slash_command(
         name="roll_successes",
-        description="Rolls a number of dice and counts the number of successes",
+        description=LocalisedDesc(**localizer.translations("roll_successes_description")),
     )
     @slash_option(
         name="number",
-        description="The number of dice to roll (default 1)",
+        description=LocalisedDesc(**localizer.translations("number_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="sides",
-        description="The number of sides on each dice (default 6)",
+        description=LocalisedDesc(**localizer.translations("sides_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="high_exploding",
-        description="The exploding behavior for dice that roll the maximum value (default None)",
+        description=LocalisedDesc(
+            **localizer.translations(
+                "the_exploding_behavior_for_dice_that_roll_the_maximum_value_default_none"
+            )
+        ),
         required=False,
         opt_type=OptionType.INTEGER,
         choices=[
-            SlashCommandChoice(name="None", value=ExplodingBehavior.NONE),
-            SlashCommandChoice(name="Once", value=ExplodingBehavior.ONCE),
-            SlashCommandChoice(name="Forever", value=ExplodingBehavior.CASCADING),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("none")), value=ExplodingBehavior.NONE
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("once")), value=ExplodingBehavior.ONCE
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("forever")),
+                value=ExplodingBehavior.CASCADING,
+            ),
         ],
     )
     @slash_option(
         name="low_subtracting",
-        description="Do we subtract 1 from the number of successes for each dice that rolled a 1? (default False)",
+        description=LocalisedDesc(**localizer.translations("low_subtracting_description")),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
     @slash_option(
         name="dice_modifier",
-        description="The modifier to add to each dice roll (default 0)",
+        description=LocalisedDesc(**localizer.translations("dice_modifier_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="pool_modifier",
-        description="The modifier to add to the final number of successes (default 0)",
+        description=LocalisedDesc(**localizer.translations("pool_modifier_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="threshold",
-        description="The threshold value to compare the dice rolls to (default 4)",
+        description=LocalisedDesc(**localizer.translations("threshold_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
@@ -98,13 +112,25 @@ class PolyDice(Extension):
         else:
             color = 0x00FF00
         embed = Embed(
-            title="Roll Successes",
-            description=f'{result.successes} Erfolge{" (Fehlschlag)" if result.successes <= 0 else ""}',
+            title=localizer.translate(ctx.locale, "roll_successes"),
+            description=localizer.translate(
+                ctx.locale,
+                "resultsuccesses_erfolge_fehlschlag_if_resultsuccesses__0_else_",
+                resultsuccesses=result.successes,
+                _fehlschlag_if_resultsuccesses__0_else_=localizer.translate(
+                    ctx.locale, "_fehlschlag"
+                )
+                if result.successes <= 0
+                else "",
+            ),
             color=color,
         )
-        embed.add_field(name="Würfelpool:", value=f"{number}W{sides}")
         embed.add_field(
-            name="Ergebnis:",
+            name=localizer.translate(ctx.locale, "würfelpool"),
+            value=localizer.translate(ctx.locale, "numberwsides", number=number, sides=sides),
+        )
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "ergebnis"),
             value=", ".join(
                 [
                     format_dice_success_result(dice, threshold, low_subtracting)
@@ -114,7 +140,7 @@ class PolyDice(Extension):
         )
         if high_exploding != ExplodingBehavior.NONE and result.extra_dice:
             embed.add_field(
-                name="Bonuswürfel:",
+                name=localizer.translate(ctx.locale, "bonuswürfel"),
                 value=", ".join(
                     [
                         format_dice_success_result(dice, threshold, low_subtracting)
@@ -123,44 +149,57 @@ class PolyDice(Extension):
                 ),
             )
         if pool_modifier != 0:
-            embed.add_field(name="Gekaufte Erfolge:", value=str(pool_modifier))
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "gekaufte_erfolge"), value=str(pool_modifier)
+            )
         await ctx.send(embed=embed)
 
     @slash_command(
-        name="roll_sum", description="Rolls a number of dice and returns the sum of the results"
+        name="roll_sum", description=LocalisedDesc(**localizer.translations("roll_sum_description"))
     )
     @slash_option(
         name="number",
-        description="The number of dice to roll (default 1)",
+        description=LocalisedDesc(**localizer.translations("number_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="sides",
-        description="The number of sides on each dice (default 6)",
+        description=LocalisedDesc(**localizer.translations("sides_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="high_exploding",
-        description="The exploding behavior for dice that roll the maximum value (default None)",
+        description=LocalisedDesc(
+            **localizer.translations(
+                "the_exploding_behavior_for_dice_that_roll_the_maximum_value_default_none"
+            )
+        ),
         required=False,
         opt_type=OptionType.INTEGER,
         choices=[
-            SlashCommandChoice(name="None", value=ExplodingBehavior.NONE),
-            SlashCommandChoice(name="Once", value=ExplodingBehavior.ONCE),
-            SlashCommandChoice(name="Forever", value=ExplodingBehavior.CASCADING),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("none")), value=ExplodingBehavior.NONE
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("once")), value=ExplodingBehavior.ONCE
+            ),
+            SlashCommandChoice(
+                name=LocalisedName(**localizer.translations("forever")),
+                value=ExplodingBehavior.CASCADING,
+            ),
         ],
     )
     @slash_option(
         name="dice_modifier",
-        description="The modifier to add to each dice roll (default 0)",
+        description=LocalisedDesc(**localizer.translations("dice_modifier_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
     @slash_option(
         name="pool_modifier",
-        description="The modifier to add to the final result (default 0)",
+        description=LocalisedDesc(**localizer.translations("pool_modifier_description")),
         required=False,
         opt_type=OptionType.INTEGER,
     )
@@ -185,20 +224,25 @@ class PolyDice(Extension):
         else:
             color = 0x00FF00
         embed = Embed(
-            title="Roll Sum",
-            description=f'{result.sum}{" (Fehlschlag)" if result.sum <= 0 else ""}',
+            title=localizer.translate(ctx.locale, "roll_sum"),
+            description=f'{result.sum}{LocalisedDesc(**localizer.translations("_fehlschlag")) if result.sum <= 0 else ""}',
             color=color,
         )
-        embed.add_field(name="Würfelpool:", value=f"{number}W{sides}")
         embed.add_field(
-            name="Ergebnis:",
+            name=localizer.translate(ctx.locale, "würfelpool"),
+            value=localizer.translate(ctx.locale, "numberwsides", number=number, sides=sides),
+        )
+        embed.add_field(
+            name=localizer.translate(ctx.locale, "ergebnis"),
             value=", ".join([format_dice_result(dice) for dice in result.dice_results]),
         )
         if high_exploding != ExplodingBehavior.NONE and result.extra_dice:
             embed.add_field(
-                name="Bonuswürfel:",
+                name=localizer.translate(ctx.locale, "bonuswürfel"),
                 value=", ".join([format_dice_result(dice) for dice in result.extra_dice]),
             )
         if pool_modifier != 0:
-            embed.add_field(name="Bonuswert:", value=str(pool_modifier))
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "bonuswert"), value=str(pool_modifier)
+            )
         await ctx.send(embed=embed)
