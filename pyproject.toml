@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lesterbot-v4"
-version = "0.1.6"
+version = "0.1.7"
 description = ""
 authors = ["Lukas Jaspaert <l.ester@gmx.de>"]
 readme = "README.md"
