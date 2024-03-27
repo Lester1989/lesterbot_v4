@@ -38,7 +38,7 @@ def translations(key):
 
 
 def translate(locale: str, key: str, **kwargs):
-    if locale == "german":
+    if locale in {"german", "de"}:
         return translation_data[key]["de"].format(**kwargs)
     return translation_data[key]["en"].format(**kwargs)
 
