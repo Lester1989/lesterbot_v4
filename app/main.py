@@ -74,7 +74,6 @@ async def open_todos(ctx: SlashContext):
 @slash_command(
     name="get_test_list",
     description="Lists all the commands for manual testing",
-    scopes=["885924660150157312"],
 )
 async def get_test_list(ctx: SlashContext):
     """A slash command that sends a list of all commands to the channel."""
