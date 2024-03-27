@@ -202,19 +202,20 @@ Use /initiative_show to just refresh the message
 async def show_channel_initiative(ctx: SlashContext, refresh_message: bool = False):
     channel_id: str = str(ctx.channel_id)
     trackings = get_channel_initiative(channel_id)
-    names = [tracking.name for tracking in trackings]
     if refresh_message and trackings:
         if old_message := ctx.channel.get_message(trackings[0].message_id):
             await ctx.channel.delete_message(old_message)
             return
-    new_message = await ctx.send(embed=render_initiative(ctx, names))
+    new_message = await ctx.send(embed=render_initiative(ctx, trackings))
     insert_channel_message(channel_id, str(new_message.id))
 
 
-def render_initiative(ctx: SlashContext, names: list[str]):
+def render_initiative(ctx: SlashContext, trackings: list[InitiativeTracking]):
     return Embed(
         title=localizer.translate(ctx.locale, "initiative_tracker"),
-        description="\n".join(names)
-        if names
+        description="\n".join(
+            f"{index + 1}. {tracking.name}" for index, tracking in enumerate(trackings)
+        )
+        if trackings
         else localizer.translate(ctx.locale, "empty__use_insert_commands_to_fill_the_slots"),
     )

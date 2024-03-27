@@ -38,7 +38,9 @@ def translations(key):
 
 
 def translate(locale: str, key: str, **kwargs):
-    return translation_data[key][locale].format(**kwargs)
+    if locale == "german":
+        return translation_data[key]["de"].format(**kwargs)
+    return translation_data[key]["en"].format(**kwargs)
 
 
 def generate_localisations(file_name: str):

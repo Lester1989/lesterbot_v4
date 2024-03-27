@@ -168,7 +168,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
             session.add(db_object)
             session.commit()
         invalidate_cache()
-        await ctx.send(LocalisedDesc(**localizer.translations("saved")), ephemeral=True)
+        await ctx.send(localizer.translate(ctx.locale, "saved"), ephemeral=True)
 
     @slash_command(
         name="named_roll",
@@ -301,6 +301,6 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
             session.commit()
         invalidate_cache()
         await ctx.send(
-            localizer.translate(ctx.locale, LocalisedDesc(**localizer.translations("saved"))),
+            localizer.translate(ctx.locale, "saved"),
             ephemeral=True,
         )
