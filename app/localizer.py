@@ -1,8 +1,14 @@
+"""
+This module provides functions to localize strings.
+
+You can also run this script to localize strings in the source code interactively.
+"""
+
 import ast
+from enum import Enum
 import json
 import pathlib
 import re
-from string import Template
 from typing import Optional
 
 import colorama
@@ -11,16 +17,40 @@ regex_only_letters = re.compile("[^a-zA-Z]")
 
 
 def find_curly_brackets_content(input_string):
+    """
+    Find all content within curly brackets in a string.
+
+    Parameters:
+    -----------
+    input_string : str
+        The string to search for content within curly brackets.
+
+    Returns:
+    --------
+    list[str]
+        A list of all content within curly brackets.
+    """
     # Regular expression pattern to find content within curly brackets
     pattern = r"\{(.*?)\}"
-    # Find all occurrences of content within curly brackets
     return [str(content) for content in re.findall(pattern, input_string)]
 
 
 def find_and_iterate_strings(line):
+    """
+    Find all strings in a line of code and iterate over them.
+
+    Parameters:
+    -----------
+    line : str
+        The line of code to search for strings.
+
+    Returns:
+    --------
+    list[str]
+        A list of all strings in the line of code.
+    """
     # Regular expression pattern to find strings
     pattern = r"\'(?:\\.|[^\\\'])*\'|\"(?:\\.|[^\\\"])*\""
-    # Find all occurrences of strings
     return [str(content) for content in re.findall(pattern, line)]
 
 
@@ -29,7 +59,20 @@ translation_data: dict[str, dict[str, str]] = json.loads(
 )
 
 
-def translations(key):
+def translations(key:str):
+    """
+    Get translations for a key.
+
+    Parameters:
+    -----------
+    key : str
+        The key to get translations for.
+
+    Returns:
+    --------
+    dict[str, str]
+        A dictionary with translations for the key.
+    """
     return {
         "german": translation_data[key]["de"].lower().replace(" ", "_"),
         "english_us": translation_data[key]["en"].lower().replace(" ", "_"),
@@ -38,12 +81,39 @@ def translations(key):
 
 
 def translate(locale: str, key: str, **kwargs):
+    """
+    Translate a key to a locale.
+
+    Parameters:
+    -----------
+    locale : str
+        The locale to translate the key to.
+    key : str
+        The key to translate.
+    **kwargs
+        Additional keyword arguments replacing placeholders in the translation.
+
+    Returns:
+    --------
+    str
+        The translated string.
+    """
     if locale in {"german", "de"}:
         return translation_data[key]["de"].format(**kwargs)
     return translation_data[key]["en"].format(**kwargs)
 
 
 def generate_localisations(file_name: str):
+    """
+    Generate localisations for a file.
+    opens the file and searches for decorators with name and description keywords
+    and adds them to the localisable_data.json file.
+
+    Parameters:
+    -----------
+    file_name : str
+        The name of the file to generate localisations for.
+    """
     source_code = pathlib.Path("app", "exts", file_name).read_text(encoding="utf-8")
     localisable_data = json.loads(
         pathlib.Path("app", "localisable_data.json").read_text(encoding="utf-8")
@@ -83,6 +153,16 @@ def generate_localisations(file_name: str):
 
 
 def localize_source_code(file_name: str, localisable_data: dict[str, dict[str, str]]):
+    """
+    Localize the source code of a file.
+
+    Parameters:
+    -----------
+    file_name : str
+        The name of the file to localize.
+    localisable_data : dict[str, dict[str, str]]
+        The localisable data to use for localizing the source code.
+    """
     source_code = pathlib.Path("app", "exts", file_name).read_text(encoding="utf-8")
     if "from interactions import LocalisedDesc" not in source_code:
         source_code = "from interactions import LocalisedDesc\n" + source_code
@@ -101,21 +181,49 @@ def localize_source_code(file_name: str, localisable_data: dict[str, dict[str, s
 
 
 def keyify(string: str):
+    """
+    Convert a string to a key by removing unwanted characters and replacing spaces with underscores.
+
+    Parameters:
+    -----------
+    string : str
+        The string to convert to a key.
+
+    Returns:
+    --------
+    str
+        The keyified string.
+    """
     unwanted_chars = "!\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~"
     return (
         "".join([char for char in string if char not in unwanted_chars]).replace(" ", "_").lower()
     )
 
 
-def localize_line(
-    line: str, current_string: str, is_in_decorator: bool = False
-) -> tuple[str, dict[str, dict[str, str]], str]:
-    interpolations = {}
+def localize_line( line: str, current_string: str, is_in_decorator: bool = False ):
+    """
+    Localize a line of code.
+
+    Parameters:
+    -----------
+    line : str
+        The line of code to localize.
+    current_string : str
+        The current string to localize.
+    is_in_decorator : bool
+        Whether the string is in a decorator.
+
+    Returns:
+    --------
+    tuple[str, dict[str, dict[str, str]], str, bool]
+        A tuple containing the localized line, the translation entry, the replacement string, and whether there are (more than 2) letters to translate.
+    """
     interpolated_string = current_string
     remaining_string = current_string
-    for interpolated_content in find_curly_brackets_content(current_string):
-        interpolations[keyify(interpolated_content)] = interpolated_content
-    if interpolations:
+    if interpolations := {
+        keyify(interpolated_content): interpolated_content
+        for interpolated_content in find_curly_brackets_content(current_string)
+    }:
         interpolation_kwargs = ", " + ",".join(
             [f"{key}={value}" for key, value in interpolations.items()]
         )
@@ -155,6 +263,25 @@ def highlight_string(
     base_color: str = colorama.Fore.BLUE,
     warn_keywords: Optional[list[str]] = None,
 ):
+    """
+    Highlight a string in a line of code.
+
+    Parameters:
+    -----------
+    line : str
+        The line of code to highlight the string in.
+    highlight : str
+        The string to highlight.
+    base_color : str
+        The base color to use for highlighting.
+    warn_keywords : list[str]
+        A list of keywords to warn about in the line of code.
+
+    Returns:
+    --------
+    str
+        The line of code with the string highlighted.
+    """
     if not warn_keywords:
         warn_keywords = ["name=", "description=", "localizer", "print", "custom_id"]
     if warn_keywords:
@@ -170,6 +297,22 @@ def show_line_with_scope(
     base_color: str = colorama.Fore.BLUE,
     line_overwrite: Optional[str] = None,
 ):
+    """
+    Show a line of code with a scope of surrounding lines.
+
+    Parameters:
+    -----------
+    lines : dict[int, str]
+        A dictionary of line numbers and lines of code.
+    line_number : int
+        The line number to show.
+    scope : int
+        The scope of surrounding lines to show.
+    base_color : str
+        The base color to use for highlighting.
+    line_overwrite : str
+        The line to overwrite the original line with.
+    """
     for i in range(line_number - scope, line_number + scope):
         if i in lines:
             if i == line_number:
@@ -179,19 +322,17 @@ def show_line_with_scope(
             print(colorama.Style.RESET_ALL, end="")
 
 
+
 def interactive_localization(file_name: str):
-    source_code = pathlib.Path("app", "exts", file_name).read_text(encoding="utf-8")
-    localisable_data: dict[str, dict[str, str]] = json.loads(
-        pathlib.Path("app", "localisable_data.json").read_text(encoding="utf-8")
-    )
-    lines = dict(enumerate(source_code.split("\n")))
-    lines_with_string = [
-        line_number
-        for line_number, line in enumerate(source_code.split("\n"))
-        if '"' in line
-        or "'" in line
-        and any(len(keyify(string)) > 2 for string in find_and_iterate_strings(line))
-    ]
+    """
+    Interactively localize a file.
+
+    Parameters:
+    -----------
+    file_name : str
+        The name of the file to localize.
+    """
+    localisable_data, lines, lines_with_string = load_data(file_name)
     scope: int = 3
     for idx, line_number in enumerate(lines_with_string):
         progress_percent = idx / len(lines_with_string)
@@ -200,100 +341,11 @@ def interactive_localization(file_name: str):
         handling_line = True
         while handling_line:
             for current_string in find_and_iterate_strings(lines[line_number]):
-                if lines[line_number].strip().startswith('"""') or lines[
-                    line_number
-                ].strip().startswith("'''"):
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping string in comment")
+                current_string_needs_translation = check_auto_skip_line(lines, line_number, current_string)
+                if not current_string_needs_translation:
                     continue
-                if len(keyify(current_string)) < 3:
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping short string")
-                    continue
-                if (
-                    f"translations({current_string})" in lines[line_number]
-                    or f"translate(ctx.locale,{current_string}" in lines[line_number]
-                    or f"translate(ctx.locale,f{current_string}" in lines[line_number]
-                ):
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping already localized string")
-                    continue
-                # if f'name={current_string}' in lines[line_number] and 'slash_option' in lines[line_number-1]+lines[line_number] or 'slash_command'  in lines[line_number-1]+lines[line_number]:
-                #     show_line_with_scope(lines,line_number,1,line_overwrite=highlight_string(lines[line_number],current_string,base_color=colorama.Fore.YELLOW),base_color=colorama.Fore.YELLOW)
-                #     print(">> Skipping name string")
-                #     continue
-                if f"custom_id={current_string}" in lines[line_number]:
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping custom_id string")
-                    continue
-                if (
-                    f"print({current_string})" in lines[line_number]
-                    or f"print(f{current_string})" in lines[line_number]
-                ):
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping print string")
-                    continue
-                if f".autocomplete({current_string})" in lines[line_number]:
-                    show_line_with_scope(
-                        lines,
-                        line_number,
-                        1,
-                        line_overwrite=highlight_string(
-                            lines[line_number], current_string, base_color=colorama.Fore.YELLOW
-                        ),
-                        base_color=colorama.Fore.YELLOW,
-                    )
-                    print(">> Skipping autocomplete string")
-                    continue
-                (
-                    localized_line,
-                    translation_entry,
-                    replacement,
-                    has_letters_to_translate,
-                ) = localize_line(lines[line_number], current_string)
-                localized_line_dec, translation_entry_dec, replacement_dec, _ = localize_line(
-                    lines[line_number], current_string, True
-                )
+                localized_line, translation_entry, replacement, has_letters_to_translate = localize_line(lines[line_number], current_string)
+                localized_line_dec, translation_entry_dec, replacement_dec, _ = localize_line( lines[line_number], current_string, True )
                 if not has_letters_to_translate:
                     show_line_with_scope(
                         lines,
@@ -306,19 +358,162 @@ def interactive_localization(file_name: str):
                     )
                     print(">> Skipping string without letters to translate")
                     continue
-                show_line_with_scope(
-                    lines,
-                    line_number,
-                    scope,
-                    line_overwrite=highlight_string(lines[line_number], current_string),
-                )
-                print("=====================================")
-                print(
-                    f"Enter to accept suggestion, or 'n' to skip, 'f' to Flag for later inspection, or 'q' to quit, + or - to change scope ({scope})"
-                )
-                print("=====================================")
-                print("Python:")
-                show_line_with_scope(
+                show_suggested_refactoring(lines, scope, line_number, localized_line, translation_entry, replacement, localized_line_dec, replacement_dec, current_string)
+                loop_control = handle_user_interaction(lines, scope, line_number, localized_line, translation_entry, localized_line_dec, translation_entry_dec, localisable_data)
+                if loop_control == LoopControl.RETURN:
+                    return
+                if loop_control == LoopControl.CONTINUE:
+                    continue
+                if loop_control == LoopControl.BREAK:
+                    break
+            else:
+                handling_line = False
+    save_data(file_name, localisable_data, lines)
+
+def save_data(file_name:str, localisable_data:dict[str, dict[str, str]], lines:dict[int,str]):
+    """
+    Save data to a file.
+
+    Parameters:
+    -----------
+    file_name : str
+        The name of the file to save data to, in the app/exts directory.
+    localisable_data : dict[str, dict[str, str]]
+        The localisable data to save.
+    lines : dict[int, str]
+        The lines of code to save.
+    """
+    pathlib.Path("app", "exts", file_name).write_text(
+        "\n".join([lines[i] for i in sorted(lines.keys())]), encoding="utf-8"
+    )
+    pathlib.Path("app", "localisable_data.json").write_text(
+        json.dumps(localisable_data, indent=4), encoding="utf-8"
+    )
+
+def load_data(file_name:str):
+    """
+    Load data from a file.
+
+    Parameters:
+    -----------
+    file_name : str
+        The name of the file to load data from, in the app/exts directory.
+
+    Returns:
+    --------
+    dict[str, dict[str, str]], dict[int, str], list[int]
+        The localisable data, the lines of code, and the lines with strings.
+    """
+    source_code = pathlib.Path("app", "exts", file_name).read_text(encoding="utf-8")
+    localisable_data: dict[str, dict[str, str]] = json.loads(
+        pathlib.Path("app", "localisable_data.json").read_text(encoding="utf-8")
+    )
+    lines = dict(enumerate(source_code.split("\n")))
+    lines_with_string = [
+        line_number
+        for line_number, line in enumerate(source_code.split("\n"))
+        if '"' in line
+        or "'" in line
+        and any(len(keyify(string)) > 2 for string in find_and_iterate_strings(line))
+    ]
+    return localisable_data,lines,lines_with_string
+
+class LoopControl(Enum):
+    """ Loop control actions. """
+    CONTINUE = "continue"
+    BREAK = "break"
+    RETURN = "return"
+
+def handle_user_interaction(lines:dict[int,str], scope:int, line_number:int, localized_line:str, translation_entry:str, localized_line_dec:str, translation_entry_dec:str, localisable_data:dict[str, dict[str, str]]):
+    """
+    Handle user interaction for a line of code.
+
+    Parameters:
+    -----------
+    lines : dict[int, str]
+        A dictionary of line numbers and lines of code.
+    scope : int
+        The scope of surrounding lines.
+    line_number : int
+        The line number to handle.
+    localized_line : str
+        The localized line to handle.
+    translation_entry : str
+        The translation entry to handle.
+    localized_line_dec : str
+        The localized line with a decorator to handle.
+    translation_entry_dec : str
+        The translation entry with a decorator to handle.
+
+    Returns:
+    --------
+    LoopControl
+        The loop control action to take.
+    """
+    print("Action:".center(40, "="))
+    print(f"Enter to accept suggestion, or 'n' to skip, 'f' to Flag for later inspection, or 'q' to quit, + or - to change scope ({scope})" )
+    user_input = input()
+    if user_input in "f":
+        lines[line_number] += "#TODO: LOCALIZATION FLAG"
+        localized_line += "#TODO: LOCALIZATION FLAG"
+        localized_line_dec += "#TODO: LOCALIZATION FLAG"
+        user_input.replace("f", "")
+    if user_input == "q":
+        return LoopControl.RETURN
+    if user_input == "n":
+        return LoopControl.CONTINUE
+    if user_input == "+":
+        scope += 1
+        return LoopControl.BREAK
+    if user_input == "-":
+        scope -= 1
+        return LoopControl.BREAK
+    if user_input == "":
+        localisable_data |= translation_entry
+        lines[line_number] = localized_line
+        # break
+        return LoopControl.BREAK
+    if user_input == "d":
+        localisable_data |= translation_entry_dec
+        lines[line_number] = localized_line_dec
+        # break
+        return LoopControl.BREAK
+    return LoopControl.CONTINUE
+
+def show_suggested_refactoring(lines:dict[int,str], scope:int, line_number:int, localized_line:str, translation_entry:str, replacement:str, localized_line_dec:str, replacement_dec:str,current_string:str):
+    """
+    Show suggested refactoring for a line of code.
+
+    Parameters:
+    -----------
+    lines : dict[int, str]
+        A dictionary of line numbers and lines of code.
+    scope : int
+        The scope of surrounding lines to show.
+    line_number : int
+        The line number to show.
+    localized_line : str
+        The localized line to show.
+    translation_entry : str
+        The translation entry to show.
+    replacement : str
+        The replacement string to show.
+    localized_line_dec : str
+        The localized line with a decorator to show.
+    replacement_dec : str
+        The replacement string with a decorator to show.
+    current_string : str
+        The current string to show.
+    """
+    print("Original:".center(40, "="))
+    show_line_with_scope(
+        lines,
+        line_number,
+        scope,
+        line_overwrite=highlight_string(lines[line_number], current_string),
+    )
+    print("Python:".center(40, "="))
+    show_line_with_scope(
                     lines,
                     line_number,
                     scope,
@@ -326,9 +521,8 @@ def interactive_localization(file_name: str):
                         localized_line, replacement, warn_keywords=["XYZ"]
                     ),
                 )
-                print("=====================================")
-                print("Python (Decorator):")
-                show_line_with_scope(
+    print("Python (Decorator):".center(40, "="))
+    show_line_with_scope(
                     lines,
                     line_number,
                     scope,
@@ -340,55 +534,90 @@ def interactive_localization(file_name: str):
                     ),
                     base_color=colorama.Fore.YELLOW,
                 )
-                print("=====================================")
-                print("Translation:")
-                print(json.dumps(translation_entry, indent=4))
-                print("=====================================")
-                user_input = input()
-                if user_input in "f":
-                    lines[line_number] += "#TODO: LOCALIZATION FLAG"
-                    localized_line += "#TODO: LOCALIZATION FLAG"
-                    localized_line_dec += "#TODO: LOCALIZATION FLAG"
-                    user_input.replace("f", "")
-                if user_input == "q":
-                    return
-                if user_input == "n":
-                    continue
-                if user_input == "+":
-                    scope += 1
-                    break
-                if user_input == "-":
-                    scope -= 1
-                    break
-                if user_input == "":
-                    localisable_data |= translation_entry
-                    lines[line_number] = localized_line
-                    break
-                if user_input == "d":
-                    localisable_data |= translation_entry_dec
-                    lines[line_number] = localized_line_dec
-                    break
-            else:
-                handling_line = False
-    pathlib.Path("app", "exts", file_name).write_text(
-        "\n".join([lines[i] for i in sorted(lines.keys())]), encoding="utf-8"
-    )
-    pathlib.Path("app", "localisable_data.json").write_text(
-        json.dumps(localisable_data, indent=4), encoding="utf-8"
-    )
+    print("Translation:".center(40, "="))
+    print(json.dumps(translation_entry, indent=4))
+    print("=====================================")
+
+def check_auto_skip_line(lines, line_number, current_string,silent:bool=False):
+    """
+    Check if a line should be skipped automatically.
+
+    Parameters:
+    -----------
+    lines : dict[int, str]
+        A dictionary of line numbers and lines of code.
+    line_number : int
+        The line number to check.
+    current_string : str
+        The current string to check.
+    silent : bool
+        Whether to print messages.
+
+    Returns:
+    --------
+    bool
+        Whether the line should be skipped automatically.
+    """
+    checks_with_message=[
+        (
+            lambda current_string,line_number: lines[line_number].strip().startswith('"""') or lines[ line_number ].strip().startswith("'''"),
+            ">> Skipping string in comment"
+        ),
+        (
+            lambda current_string,line_number: len(keyify(current_string)) < 3,
+            ">> Skipping short string"
+        ),
+        (
+            lambda current_string,line_number: f"translations({current_string})" in lines[line_number]
+            or f"translate(ctx.locale,{current_string}" in lines[line_number]
+            or f"translate(ctx.locale,f{current_string}" in lines[line_number],
+            ">> Skipping already localized string"
+        ),
+        (
+            lambda current_string,line_number: f"custom_id={current_string}" in lines[line_number],
+            ">> Skipping custom_id string"
+        ),
+        (
+            lambda current_string,line_number: f"print({current_string})" in lines[line_number]
+            or f"print(f{current_string})" in lines[line_number],
+            ">> Skipping print string"
+        ),
+        (
+            lambda current_string,line_number: f".autocomplete({current_string})" in lines[line_number],
+            ">> Skipping autocomplete string"
+        ),
+    ]
+    current_string_needs_translation = False
+    for check, message in checks_with_message:
+        if check(current_string,line_number):
+            if not silent:
+                show_line_with_scope(
+                    lines,
+                    line_number,
+                    1,
+                    line_overwrite=highlight_string(
+                        lines[line_number], current_string, base_color=colorama.Fore.YELLOW
+                    ),
+                    base_color=colorama.Fore.YELLOW,
+                )
+                print(message)
+            break
+    else:
+        current_string_needs_translation = True
+    return current_string_needs_translation
 
 
 if __name__ == "__main__":
-    for file_name in pathlib.Path("app", "exts").iterdir():
-        if file_name.is_file() and file_name.suffix == ".py":
-            print("=" * (len(file_name.name) + 2))
-            print(f"|{file_name.name}|")
-            print("=" * (len(file_name.name) + 2))
+    for ext_file_name in pathlib.Path("app", "exts").iterdir():
+        if ext_file_name.is_file() and ext_file_name.suffix == ".py":
+            print("=" * (len(ext_file_name.name) + 2))
+            print(f"|{ext_file_name.name}|")
+            print("=" * (len(ext_file_name.name) + 2))
             localise = input("Localize? (y/n)")
             if localise != "y":
                 continue
 
-            generate_localisations(file_name.name)
+            generate_localisations(ext_file_name.name)
             print("Starting interactive localization")
             input("Press enter to start")
-            interactive_localization(file_name.name)
+            interactive_localization(ext_file_name.name)

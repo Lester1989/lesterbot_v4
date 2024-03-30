@@ -1,3 +1,4 @@
+"""This module contains the NSCGen extension with a command to generate random NSC characters."""
 import random
 
 from interactions import (
@@ -6,7 +7,6 @@ from interactions import (
     LocalisedDesc,
     LocalisedName,
     OptionType,
-    SlashCommandChoice,
     SlashContext,
     slash_command,
     slash_option,
@@ -20,7 +20,9 @@ from app.library.speciesnames import names as btw_names
 
 
 class NSCGen(Extension):
+    """An extension for generating random NSC characters."""
     async def async_start(self):
+        """Print a message when the extension is started."""
         print("Starting NSCGen Extension")
 
     @slash_command(
@@ -94,6 +96,7 @@ class NSCGen(Extension):
         nymph: bool = False,
         count: int = 1,
     ):
+        """Generate a random NSC character."""
         available_species = []
         if mensch:
             available_species.append("Mensch")

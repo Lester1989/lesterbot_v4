@@ -1,3 +1,8 @@
+"""
+This module contains the PolyDice extension for the bot.
+
+The PolyDice extension provides commands for rolling dice and counting successes.
+"""
 from interactions import (
     Embed,
     Extension,
@@ -12,7 +17,6 @@ from interactions import (
 
 import app.localizer as localizer
 from app.library.polydice import (
-    DiceResult,
     ExplodingBehavior,
     format_dice_result,
     format_dice_success_result,
@@ -22,7 +26,9 @@ from app.library.polydice import (
 
 
 class PolyDice(Extension):
+    """An extension for rolling dice and counting successes."""
     async def async_start(self):
+        """Print a message when the extension is started."""
         print("Starting PolyDice Extension")
 
     @slash_command(

@@ -1,3 +1,4 @@
+"""This module contains the RollComplex Extension."""
 from interactions import (
     AutocompleteContext,
     Button,
@@ -38,7 +39,9 @@ from app.library.saved_rolls import (
 
 
 class RollComplex(Extension):
+    """An extension for rolling complex dice pools."""
     async def async_start(self):
+        """Print a message when the extension is started."""
         print("Starting RollComplex Extension")
 
     @slash_command(
@@ -46,7 +49,8 @@ class RollComplex(Extension):
         description=LocalisedDesc(**localizer.translations("roll_help_description")),
     )
     async def roll_help(self, ctx: SlashContext):
-        await ctx.send(
+        """Send a help message for the complex dice rolling command."""
+        await ctx.send( # TODO: LOCALIZATION FLAG
             """
 **/roll_complex help**
 You can use the following Syntax to roll dice:
@@ -96,6 +100,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         opt_type=OptionType.STRING,
     )
     async def roll_complex(self, ctx: SlashContext, dice_pool: str):
+        """Roll a complex dice pool."""
         await ctx.defer()
         result_embeds = self.create_embeds(ctx, ctx.author.display_name.split(" ")[0], dice_pool)
         action_rows = spread_to_rows(
@@ -149,6 +154,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
     async def save_roll(
         self, ctx: SlashContext, dice_pool: str, roll_name: str, scope: str = "channel"
     ):
+        """Save a complex dice pool."""
         if scope == "server":
             discord_id = str(ctx.guild_id)
         elif scope == "category":
@@ -182,6 +188,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         autocomplete=True,
     )
     async def named_roll(self, ctx: SlashContext, roll_name: str):
+        """Roll a saved dice pool."""
         saved_roll_id = int(roll_name)
         saved_roll = get_by_id(saved_roll_id)
 
@@ -194,6 +201,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
 
     @named_roll.autocomplete("roll_name")
     async def roll_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocomplete the name of a saved roll."""
         string_option_input = ctx.input_text
 
         result = [
@@ -207,6 +215,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         await ctx.send(choices=result)
 
     def create_embeds(self, ctx: SlashContext, display_name: str, dice_pool: str):
+        """Create the embeds for the dice pool."""
         result_embeds = []
         dice_description = dice_pool.split("#")[0].split(" ")
         comment = dice_pool.split("#")[1] if "#" in dice_pool else ""
@@ -262,6 +271,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
 
     @component_callback("save_complex_pool")
     async def button_save_complex_pool(self, ctx: ComponentContext):
+        """Handle the button press to save a complex dice pool."""
         save_modal = Modal(
             ShortText(label=localizer.translate(ctx.locale, "name"), custom_id="roll_name"),
             ShortText(
@@ -281,6 +291,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
 
     @modal_callback("save_complex_roll")
     async def on_modal_answer(self, ctx: ModalContext, roll_name: str, dice_pool: str, scope: str):
+        """Save a complex dice pool."""
         if scope == "server":
             discord_id = str(ctx.guild_id)
         elif scope == "category":

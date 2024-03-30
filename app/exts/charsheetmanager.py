@@ -1,3 +1,4 @@
+""" This module contains the CharSheetManager extension, which provides commands for managing character sheets. """
 from interactions import (
     AutocompleteContext,
     BaseContext,
@@ -24,7 +25,6 @@ from app.library.charsheet import (
     GroupState,
     ModificationState,
     RuleSystemRolls,
-    RuleSystemSuggestions,
     SheetModification,
 )
 from app.library.complex_dice_parser import Parser
@@ -32,6 +32,7 @@ from app.library.polydice import ComplexPool
 
 
 async def is_gm(context: BaseContext):
+    """Checks if the user is a GM."""
     return CategoryUser.get(int(context.channel.category.id), int(context.author.id)).is_gm
 
 
@@ -47,10 +48,13 @@ def embed_length(embed: Embed):
 
 
 class CharSheetManager(Extension):
+    """Extension for managing character sheets."""
     async def async_start(self):
+        """Prints a message when the extension is started."""
         print("Starting CharSheetManager Extension")
 
     def show_group_info(self, ctx: SlashContext) -> Embed:
+        """Shows group info."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         users = CategoryUser.get_by_category(int(ctx.channel.category.id))
         embed = Embed(
@@ -231,6 +235,7 @@ class CharSheetManager(Extension):
         )
 
     def chunk_list(self, items: list[str], join_char: str = "\n", max_length: int = 1000):
+        """Chunks a list of strings into strings of a maximum length."""
         current_string = ""
         for item in items:
             if len(current_string + item) > max_length:
@@ -240,6 +245,7 @@ class CharSheetManager(Extension):
         yield current_string
 
     def display_character(self, ctx: SlashContext, character: CharacterHeader) -> Embed:
+        """Displays a character sheet."""
         results = []
         embed = Embed(
             title=character.name,
@@ -310,9 +316,8 @@ class CharSheetManager(Extension):
     async def character_name_autocomplete(
         self, ctx: AutocompleteContext, gm_see_all: bool = False, everyone_see_all: bool = False
     ):
-        # TODO cache the character names
+        """Autocompletes character names."""
         string_option_input = ctx.input_text
-        print(f"Autocomplete for {string_option_input}")
         if everyone_see_all or (gm_see_all and is_gm(ctx)):
             headers = CharacterHeader.get_by_category(int(ctx.channel.category.id))
         else:
@@ -407,6 +412,7 @@ class CharSheetManager(Extension):
 
     @update_character.autocomplete("name")
     async def update_character_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for updating."""
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
@@ -437,6 +443,7 @@ class CharSheetManager(Extension):
 
     @delete_character.autocomplete("name")
     async def delete_character_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for deletion."""
         await self.character_name_autocomplete(ctx)
 
     @slash_command(
@@ -457,6 +464,7 @@ class CharSheetManager(Extension):
 
     @show_character.autocomplete("name")
     async def show_character_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for showing."""
         settings = CategorySetting.get_by_category(int(ctx.channel.category.id))
         await self.character_name_autocomplete(ctx, True, not settings.character_hidden)
 
@@ -554,6 +562,7 @@ class CharSheetManager(Extension):
 
     @add_attribute.autocomplete("name")
     async def add_attribute_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for adding attributes."""
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
@@ -618,6 +627,7 @@ class CharSheetManager(Extension):
 
     @list_pending_changes.autocomplete("name")
     async def list_pending_changes_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for listing pending changes."""
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
@@ -669,6 +679,7 @@ class CharSheetManager(Extension):
 
     @approve_all_changes.autocomplete("name")
     async def approve_all_changes_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for approving all changes."""
         await self.character_name_autocomplete(ctx, True)
 
     @slash_command(
@@ -719,9 +730,11 @@ class CharSheetManager(Extension):
 
     @reject_all_changes.autocomplete("name")
     async def reject_all_changes_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for rejecting all changes."""
         await self.character_name_autocomplete(ctx, True)
 
     async def change_attribute_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes attribute names."""
         char_name = ctx.kwargs.get("name")
         if not char_name:
             await ctx.send(
@@ -794,10 +807,12 @@ class CharSheetManager(Extension):
 
     @approve_change.autocomplete("name")
     async def approve_change_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for approving changes."""
         await self.character_name_autocomplete(ctx, True)
 
     @approve_change.autocomplete("attribute_name")
     async def approve_change_attribute_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes attribute names for approving changes."""
         self.change_attribute_name_autocomplete(ctx)
 
     @slash_command(
@@ -849,10 +864,12 @@ class CharSheetManager(Extension):
 
     @reject_change.autocomplete("name")
     async def reject_change_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes character names for rejecting changes."""
         await self.character_name_autocomplete(ctx, True)
 
     @reject_change.autocomplete("attribute_name")
     async def reject_change_attribute_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocompletes attribute names for rejecting changes."""
         self.change_attribute_name_autocomplete(ctx)
 
     @slash_command(

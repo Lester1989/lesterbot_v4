@@ -1,3 +1,4 @@
+"""Werewolf: The Apocalypse 20th Anniversary Edition extension for Polydice."""
 import re
 
 import aiohttp
@@ -12,7 +13,6 @@ from interactions import (
     LocalisedDesc,
     OptionType,
     SlashCommandChoice,
-    SlashCommandOption,
     SlashContext,
     component_callback,
     slash_command,
@@ -32,10 +32,12 @@ regex_pattern = re.compile(r"show_gift_(.*)")
 
 
 class WerewolfW20(Extension):
+    """An extension for Werewolf: The Apocalypse 20th Anniversary Edition."""
     gifts: list[Gift] = []
     gift_names: list[str] = []
 
     async def async_start(self):
+        """Print a message when the extension is started."""
         self.gifts = load_gifts()
         self.gift_names = [gift.name.lower() for gift in self.gifts]
         print("Starting Werewolf Extension")
@@ -139,6 +141,7 @@ class WerewolfW20(Extension):
         return await self.display_gift(ctx, gift_name)
 
     async def display_gift(self, ctx: SlashContext, gift_name: str):
+        """Display the gift description."""
         gift = next((gift for gift in self.gifts if gift.name.lower() == gift_name.lower()), None)
         if gift is None:
             await ctx.send(
@@ -162,6 +165,7 @@ class WerewolfW20(Extension):
 
     @show_gift.autocomplete("gift_name")
     async def gift_name_autocomplete(self, ctx: AutocompleteContext):
+        """Autocomplete gift names."""
         string_option_input = ctx.input_text
 
         result = [
@@ -193,6 +197,7 @@ class WerewolfW20(Extension):
         )
 
     async def download_file(self, url: str, file_path: str):
+        """Download a file from a URL."""
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 with open(file_path, "wb") as f:

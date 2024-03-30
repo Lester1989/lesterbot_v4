@@ -1,20 +1,36 @@
-import asyncio
+"""
+This is a simple bot that demonstrates how to use the interactions library to create a bot that can respond to slash commands.
+
+The bot has a few commands that can be used to interact with it. The commands are defined as functions that are decorated with the `@slash_command` decorator. The `@slash_command` decorator takes the name and description of the command as arguments.
+
+The bot also has an `on_ready` event that is called when the bot is ready to respond to commands. This event is defined as a function that is decorated with the `@listen` decorator.
+
+The bot uses the `Client` class from the interactions library to create a bot client. The `Client` class takes an `intents` argument that specifies the intents that the bot should listen for.
+
+The bot is started by calling the `start` method on the `Client` instance with the bot token as an argument.
+
+The bot also has a `gather_all_commands` function that takes a `Client` instance as an argument and returns a dictionary of all the commands that the bot has defined. The dictionary is of the form `{extension_name: [PrintableCommand(), ...]}` where `PrintableCommand` is a dataclass that represents a command.
+
+The bot also has a `build_time` variable that stores the build time of the bot.
+
+The bot is run by calling the `start` method on the `Client` instance with the bot token as an argument.
+"""
+
 import os
 import pathlib
 import sys
 from dataclasses import dataclass
 from datetime import datetime
-
-sys.path.append(".")
-
 from interactions import (
     Client,
     Intents,
-    OptionType,
     SlashContext,
     listen,
     slash_command,
 )
+
+sys.path.append(".")
+
 
 bot = Client(intents=Intents.DEFAULT)
 build_time = datetime.now()
@@ -22,6 +38,7 @@ build_time = datetime.now()
 
 @dataclass
 class PrintableCommand:
+    """Dataclass for storing command name and description."""
     name: str
     description: str
 
@@ -33,7 +50,9 @@ def gather_all_commands(client: Client) -> dict[str, list[PrintableCommand]]:
         ext_name = str(command.extension.__class__.__name__)
         if ext_name not in commands:
             commands[ext_name] = []
-        commands[ext_name].append(PrintableCommand(command.resolved_name, command.callback.__doc__))
+        commands[ext_name].append(
+            PrintableCommand(command.resolved_name, command.callback.__doc__)
+        )
     return commands
 
 
@@ -85,69 +104,67 @@ async def get_test_list(ctx: SlashContext):
         )
 
 
-"""
-Extension: PolyDice
-[X] roll_successes
-[X] roll_sum
+# Extension: PolyDice
+# [X] roll_successes
+# [X] roll_sum
 
-Extension: WerewolfW20
-[X] list_gifts_for
-[X] show_gift
-[X] upload_gifts
-[X] ww
+# Extension: WerewolfW20
+# [X] list_gifts_for
+# [X] show_gift
+# [X] upload_gifts
+# [X] ww
 
-Extension: NSCGen
-[X] btw_new (not localized)
+# Extension: NSCGen
+# [X] btw_new (not localized)
 
-Extension: RollComplex
-[X] roll_complex
-[X] named_roll
-[X] roll_help
-[X] save_roll
+# Extension: RollComplex
+# [X] roll_complex
+# [X] named_roll
+# [X] roll_help
+# [X] save_roll
 
-Extension: CharSheetManager
-[ ] add_attribute
-[ ] add_gm
-[ ] add_player
-[ ] approve_all_changes
-[ ] approve_change
-[ ] create_character
-[ ] creation_finished
-[ ] delete_character
-[ ] gm_roll_initiative
-[ ] list_pending_changes
-[ ] reject_all_changes
-[ ] reject_change
-[ ] remove_player
-[ ] resign_gm
-[ ] set_rule_system
-[ ] show_character
-[ ] show_group
-[ ] start_group
-[ ] update_character
+# Extension: CharSheetManager
+# [ ] add_attribute
+# [ ] add_gm
+# [ ] add_player
+# [ ] approve_all_changes
+# [ ] approve_change
+# [ ] create_character
+# [ ] creation_finished
+# [ ] delete_character
+# [ ] gm_roll_initiative
+# [ ] list_pending_changes
+# [ ] reject_all_changes
+# [ ] reject_change
+# [ ] remove_player
+# [ ] resign_gm
+# [ ] set_rule_system
+# [ ] show_character
+# [ ] show_group
+# [ ] start_group
+# [ ] update_character
 
-Extension: InitiativeTracker
-[ ] initiative_delete
-[X] initiative_help
-[X] initiative_insert_after
-[ ] initiative_insert_before
-[ ] initiative_insert_first
-[ ] initiative_insert_last
-[ ] initiative_remove
-[ ] initiative_show
-[X] initiative
+# Extension: InitiativeTracker
+# [ ] initiative_delete
+# [X] initiative_help
+# [X] initiative_insert_after
+# [ ] initiative_insert_before
+# [ ] initiative_insert_first
+# [ ] initiative_insert_last
+# [ ] initiative_remove
+# [ ] initiative_show
+# [X] initiative
 
-Extension: NoneType
-[ ] my_version
-[ ] open_todos
-[ ] get_test_list
-"""
+# Extension: NoneType
+# [ ] my_version
+# [ ] open_todos
+# [ ] get_test_list
 
 
 if __name__ == "__main__":
     if "DISCORDTOKEN" not in os.environ:
         print("Please set the DISCORDTOKEN environment variable to your bot token")
-        exit(1)
+        sys.exit(1)
     print("Starting bot")
     print("Version: ", pathlib.Path("version.txt").read_text(encoding="utf8"))
     bot.load_extension("exts.polydice")

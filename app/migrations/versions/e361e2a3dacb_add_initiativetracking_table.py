@@ -19,7 +19,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    
     op.create_table(
         'initiativetracking',
         sa.Column("id", sa.Integer(), nullable=False),

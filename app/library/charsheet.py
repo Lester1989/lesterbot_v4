@@ -1,4 +1,6 @@
+""" This module contains the database models for the charactersheet game. """
 import datetime
+from functools import lru_cache
 import re
 from enum import Enum
 
@@ -408,6 +410,7 @@ class CharacterHeader(Base):
                 .first()
             )
 
+    @lru_cache()
     @staticmethod
     def get_available(user_id: int, category_id: int) -> list["CharacterHeader"]:
         """
@@ -434,6 +437,7 @@ class CharacterHeader(Base):
                 .all()
             )
 
+    @lru_cache()
     @staticmethod
     def get_by_category(category_id: int) -> dict[tuple[int, str], list["CharacterHeader"]]:
         """
@@ -1069,6 +1073,7 @@ class SheetModification(Base):
                 sheet_key=sheet_key,
                 value=value,
                 comment=comment,
+                attribute_type=attribute_type,
             )
             session.add(sheet_modification)
             session.commit()
@@ -1178,6 +1183,7 @@ class RuleSystemRolls(Base):
 
     @property
     def needed_sheet_values(self):
+        """ Get the needed sheet values for the roll. """
         formula_blocks: list[str] = re.findall(r"\{([^\}]+)\}", self.roll)
         needed_sheet_values = set()
         for formula_block in formula_blocks:
@@ -1407,7 +1413,7 @@ class RuleSystemSuggestions(Base):
             return rule_system_suggestion
 
     @staticmethod
-    def delete(id: int) -> None:
+    def delete(rule_system_id: int) -> None:
         """
         Delete a rule system suggestion.
 
@@ -1417,12 +1423,12 @@ class RuleSystemSuggestions(Base):
             The unique identifier of the suggestion.
         """
         with Session() as session:
-            session.query(RuleSystemSuggestions).filter(RuleSystemSuggestions.id == id).delete()
+            session.query(RuleSystemSuggestions).filter(RuleSystemSuggestions.id == rule_system_id).delete()
             session.commit()
 
     @staticmethod
     def update(
-        id: int, suggested_key: str = None, suggested_value: str = None
+        rule_system_id: int, suggested_key: str = None, suggested_value: str = None
     ) -> "RuleSystemSuggestions":
         """
         Update a rule system suggestion.
@@ -1443,7 +1449,7 @@ class RuleSystemSuggestions(Base):
         """
         with Session() as session:
             rule_system_suggestion = (
-                session.query(RuleSystemSuggestions).filter(RuleSystemSuggestions.id == id).first()
+                session.query(RuleSystemSuggestions).filter(RuleSystemSuggestions.id == rule_system_id).first()
             )
             if suggested_key is not None:
                 rule_system_suggestion.suggested_key = suggested_key

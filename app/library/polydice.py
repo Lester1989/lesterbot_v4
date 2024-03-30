@@ -1,8 +1,8 @@
+"""A library for rolling dice and calculating the results."""
 import random
 from dataclasses import dataclass, field
 from enum import IntEnum
 from functools import total_ordering
-from typing import List
 
 
 class ExplodingBehavior(IntEnum):
@@ -187,7 +187,8 @@ class DicePoolExclusionsSum(DicePoolResult):
                     formatted_dice = f"~~{formatted_dice}~~"
                 result += f"{formatted_dice}, "
         return result
-    
+
+
 @dataclass
 @total_ordering
 class DicePoolExclusionsDifference(DicePoolResult):
@@ -235,11 +236,11 @@ class DicePoolExclusionsDifference(DicePoolResult):
                     formatted_dice = f"~~{formatted_dice}~~"
                 result += f"{formatted_dice}, "
         return result
-    
 
 
 @dataclass
 class ComplexPool:
+    """Represents a complex pool of dice rolls with various options."""
     number: int = 1
     sides: int = 6
     explode: ExplodingBehavior = ExplodingBehavior.NONE
@@ -255,6 +256,7 @@ class ComplexPool:
     description: str = ""
 
     def roll(self):
+        """Rolls the dice pool and returns the result."""
         if self.failure_threshold > -1 and self.success_threshold == -1:
             self.success_threshold = self.sides // 2 + 1
         base_result = roll_dice_basic(self.number, self.sides, self.dice_modifier)
