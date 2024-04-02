@@ -8,7 +8,7 @@ from sqlmodel import Field,SQLModel,create_engine,Session,select,delete
 connection_string = os.getenv("DB_CONNECTION_STRING", "sqlite:///gifts.db")
 
 
-engine = create_engine(connection_string, echo=True)
+engine = create_engine(connection_string, echo=False)
 
 class InitiativeTracking(SQLModel, table=True):
     """
@@ -47,9 +47,9 @@ def shift_order(trackings:list[InitiativeTracking],insert_index:Optional[int]=No
         The index to remove an entry from.
     """
     for entry in trackings:
-        if remove_index and entry.initiative_order >= remove_index:
+        if remove_index is not None and entry.initiative_order >= remove_index:
             entry.initiative_order -= 1
-        if insert_index and entry.initiative_order >= insert_index:
+        if insert_index is not None and entry.initiative_order >= insert_index:
             entry.initiative_order += 1
 
 def insert_before_index(channel_id:str,index:int,name:str):
@@ -96,7 +96,13 @@ def insert_before_name(channel_id:str,name_after:str,name:str):
         existing_entry:Optional[InitiativeTracking] = next(iter([entry for entry in current if entry.name == name]),None)
         old_index = existing_entry.initiative_order if existing_entry else None
         index = [entry for entry in current if entry.name == name_after][0].initiative_order
+        print('name_after',index)
+        print('existing',old_index)
+        for entry in current:
+            print("before shift",entry.initiative_order,entry.name)
         shift_order(current,index,old_index)
+        for entry in current:
+            print("after shift",entry.initiative_order,entry.name)
         if existing_entry:
             existing_entry.initiative_order = index
         else:
