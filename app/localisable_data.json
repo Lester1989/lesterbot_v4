@@ -659,6 +659,18 @@
         "de": "Lädt Gabe aus einer CSV-Datei hoch",
         "en": "Upload gifts from a CSV file"
     },
+    "my_rolls_description": {
+        "de": "Zeigt alle deine gespeicherten Würfe an",
+        "en": "Shows all your saved rolls"
+    },
+    "no_saved_rolls": {
+        "de": "Keine gespeicherten Würfe",
+        "en": "No saved rolls"
+    },
+    "your_saved_rolls": {
+        "de": "Deine gespeicherten Würfe",
+        "en": "Your saved rolls"
+    },
     "file_description": {
         "de": "Die CSV-Datei die hochgeladen werden soll",
         "en": "The CSV file to upload"

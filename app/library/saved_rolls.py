@@ -64,7 +64,6 @@ class SavedRoll(SQLModel, table=True):
             and self.discord_id == channel_id
         )
 
-
 @lru_cache()
 def get_by_user(user_id: str) -> list[SavedRoll]:
     """

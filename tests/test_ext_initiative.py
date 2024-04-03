@@ -1,5 +1,5 @@
 import unittest
-
+import asyncio
 from interactions import MessageFlags
 
 
@@ -47,6 +47,14 @@ class TestCommands(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(len(actions) == 1, "Expected a single action")
         self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
         self.assertTrue(actions[0].message["embeds"][0]["description"].split("\n") == ["1. a","2. b", "3. c"], actions[0].message)
+        actions = await call_slash(
+            InitiativeTracker.start_initiative,
+            **self.context_kwargs,
+            participants="x,y,z")
+        self.assertTrue(len(actions) == 2, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.DELETE, "Expected a message to be deleted")
+        self.assertTrue(actions[1].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[1].message["embeds"][0]["description"].split("\n") == ["1. x","2. y", "3. z"], actions[1].message)
 
     async def test_initiative_insert_before(self):
         await call_slash(
@@ -143,14 +151,14 @@ class TestCommands(unittest.IsolatedAsyncioTestCase):
             name="x",
             name_before="b")
         self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
-        self.assertTrue(actions[0].message["embeds"][0]["description"].split("\n") == ["1. a","2. x","3. b","4. c"], actions[0].message)
+        self.assertTrue(actions[0].message["embeds"][0]["description"].split("\n") == ["1. a","2. b","3. x","4. c"], actions[0].message)
         actions = await call_slash(
             InitiativeTracker.insert_after,
             **self.context_kwargs,
             name="z",
             name_before="a")
         self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
-        self.assertTrue(actions[0].message["embeds"][0]["description"].split("\n") == ["1. a","2. z","3. x","4. b","5. c"], actions[0].message)
+        self.assertTrue(actions[0].message["embeds"][0]["description"].split("\n") == ["1. a","2. z","3. b","4. x","5. c"], actions[0].message)
 
     async def test_initiative_show(self):
         await call_slash(

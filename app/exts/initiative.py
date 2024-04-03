@@ -85,9 +85,7 @@ Use /initiative_show to just refresh the message
     )
     async def show_initiative(self, ctx: SlashContext):
         """Show the current initiative tracking list."""
-        channel_id: str = str(ctx.channel_id)
-        trackings = get_channel_initiative(channel_id)
-        await ctx.send(embed=render_initiative(ctx, trackings))
+        await show_channel_initiative(ctx)
 
     @slash_command(
         name="initiative_insert_before",

@@ -155,26 +155,26 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         self, ctx: SlashContext, dice_pool: str, roll_name: str, scope: str = "channel"
     ):
         """Save a complex dice pool."""
-        if scope == "server":
-            discord_id = str(ctx.guild_id)
-        elif scope == "category":
-            discord_id = str(ctx.channel.parent_id)
-        else:
-            discord_id = str(ctx.channel_id)
-        db_object = SavedRoll(
-            user_id=str(ctx.author_id),
-            discord_id=discord_id,
-            scope=scope,
-            dice_pool=dice_pool,
-            name=roll_name,
-        )
-        with Session(
-            engine,
-        ) as session:
-            session.add(db_object)
-            session.commit()
-        invalidate_cache()
+        await self.save_roll_to_db(ctx, roll_name, dice_pool, scope)
         await ctx.send(localizer.translate(ctx.locale, "saved"), ephemeral=True)
+
+    @slash_command(
+        name="my_rolls",
+        description=LocalisedDesc(**localizer.translations("my_rolls_description")),
+    )
+    async def my_rolls(self, ctx: SlashContext):
+        """List all saved rolls for the user."""
+        saved_rolls = get_by_user(str(ctx.author_id))
+        if not saved_rolls:
+            await ctx.send(localizer.translate(ctx.locale, "no_saved_rolls"))
+            return
+        embed = Embed(title=localizer.translate(ctx.locale, "your_saved_rolls"))
+        for saved_roll in saved_rolls:
+            embed.add_field(
+                name=f"{saved_roll.name} ({saved_roll.scope})",
+                value=f"{saved_roll.dice_pool}",
+            )
+        await ctx.send(embed=embed)
 
     @slash_command(
         name="named_roll",
@@ -207,7 +207,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
         result = [
             {"name": saved_roll.name, "value": str(saved_roll.id)}
             for saved_roll in get_by_user(str(ctx.author_id))
-            if string_option_input.lower() in saved_roll.name
+            if string_option_input.lower() in saved_roll.name.lower()
             and saved_roll.is_available(
                 str(ctx.guild_id), str(ctx.channel.parent_id), str(ctx.channel_id)
             )
@@ -292,6 +292,15 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
     @modal_callback("save_complex_roll")
     async def on_modal_answer(self, ctx: ModalContext, roll_name: str, dice_pool: str, scope: str):
         """Save a complex dice pool."""
+        await self.save_roll_to_db(ctx, roll_name, dice_pool, scope)
+        await ctx.send(
+            localizer.translate(ctx.locale, "saved"),
+            ephemeral=True,
+        )
+
+    
+
+    async def save_roll_to_db(self, ctx: SlashContext, roll_name: str, dice_pool: str, scope: str):
         if scope == "server":
             discord_id = str(ctx.guild_id)
         elif scope == "category":
@@ -305,13 +314,10 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
             dice_pool=dice_pool,
             name=roll_name,
         )
+        print('saving roll',db_object)
         with Session(
             engine,
         ) as session:
             session.add(db_object)
             session.commit()
         invalidate_cache()
-        await ctx.send(
-            localizer.translate(ctx.locale, "saved"),
-            ephemeral=True,
-        )
