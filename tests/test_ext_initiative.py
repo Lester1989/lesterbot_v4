@@ -90,7 +90,7 @@ class TestCommands(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(len(actions) == 2, f"Expected a delete and send action got {actions}")
         for action in actions:
             print(action.creation_time, action.action_type,)
-        self.assertTrue(actions[0].action_type == ActionType.DELETE, "Expected a message to be deleted")
+        self.assertTrue(actions[0].action_type == ActionType.DELETE, f"Expected a message to be deleted {actions}")
         self.assertTrue(actions[1].action_type == ActionType.SEND, "Expected a message to be sent")
         self.assertTrue(actions[1].message["embeds"][0]["description"].split("\n") == ["1. a","2. c"], actions[1].message)
 

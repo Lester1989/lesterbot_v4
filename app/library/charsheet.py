@@ -16,38 +16,17 @@ class CategoryUser(Base):
     """
     A class representing a user in the category game.
 
-    Attributes:
-    -----------
-    category_id : int
-        The unique identifier of the category.
-    user_id : int
-        The unique identifier of the user.
-    is_gm : bool
-        Whether or not the user is a GM.
+    A user can be in many categories and a category can have many users. But in each category a user is either a GM or not.
     """
 
     __tablename__ = "category_users"
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category_id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
     is_gm: Mapped[bool] = mapped_column(Boolean, default=False)
 
     @staticmethod
-    def get(category_id: int, user_id: int) -> "CategoryUser":
-        """
-        Get a category user.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        user_id : int
-            The unique identifier of the user.
-
-        Returns:
-        --------
-        CategoryUser
-            The category user.
-        """
+    def get(category_id: str, user_id: str) -> "CategoryUser":
+        """ Get a category user by category and user ids (ints). """
         with Session() as session:
             return (
                 session.query(CategoryUser)
@@ -56,60 +35,20 @@ class CategoryUser(Base):
             )
 
     @staticmethod
-    def get_by_category(category_id: int) -> list["CategoryUser"]:
-        """
-        Get all category users for a category.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        list[CategoryUser]
-            A list of all category users for the category.
-        """
+    def get_by_category(category_id: str) -> list["CategoryUser"]:
+        """ Get all category users for a category. """
         with Session() as session:
             return session.query(CategoryUser).filter(CategoryUser.category_id == category_id).all()
 
     @staticmethod
-    def get_by_user(user_id: int) -> list["CategoryUser"]:
-        """
-        Get all category users for a user.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-
-        Returns:
-        --------
-        list[CategoryUser]
-            A list of all category users for the user.
-        """
+    def get_by_user(user_id: str) -> list["CategoryUser"]:
+        """ Get all category users for a user. """
         with Session() as session:
             return session.query(CategoryUser).filter(CategoryUser.user_id == user_id).all()
 
     @staticmethod
-    def create(category_id: int, user_id: int, is_gm: bool = False) -> "CategoryUser":
-        """
-        Create a new category user.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        user_id : int
-            The unique identifier of the user.
-        is_gm : bool
-            Whether or not the user is a GM.
-
-        Returns:
-        --------
-        CategoryUser
-            The created category user.
-        """
+    def create(category_id: str, user_id: str, is_gm: bool = False) -> "CategoryUser":
+        """ Create a new category user. """
         with Session() as session:
             category_user = CategoryUser(category_id=category_id, user_id=user_id, is_gm=is_gm)
             session.add(category_user)
@@ -117,42 +56,18 @@ class CategoryUser(Base):
             return category_user
 
     @staticmethod
-    def delete(category_id: int, user_id: int) -> None:
-        """
-        Delete a category user.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        user_id : int
-            The unique identifier of the user.
-        """
+    def delete(category_id: str, user_id: str) -> int:
+        """ Delete a category user and return the number of deleted rows. """
         with Session() as session:
-            session.query(CategoryUser).filter(
+            result = session.query(CategoryUser).filter(
                 CategoryUser.category_id == category_id, CategoryUser.user_id == user_id
             ).delete()
             session.commit()
+            return result
 
     @staticmethod
-    def update(category_id: int, user_id: int, is_gm: bool) -> "CategoryUser":
-        """
-        Update a category user.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        user_id : int
-            The unique identifier of the user.
-        is_gm : bool
-            Whether or not the user is a GM.
-
-        Returns:
-        --------
-        CategoryUser
-            The updated category user.
-        """
+    def update(category_id: str, user_id: str, is_gm: bool) -> "CategoryUser":
+        """ Set the GM status of a user in a category. """
         with Session() as session:
             category_user = (
                 session.query(CategoryUser)
@@ -172,17 +87,10 @@ class GroupState(Enum):
 
 
 class CategorySetting(Base):
-    """
-    A class representing a setting in the category game.
-
-    Attributes:
-    -----------
-    category_id : int
-        The unique identifier of the category.
-    """
+    """ A class representing a setting in the category game. """
 
     __tablename__ = "category_settings"
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    category_id: Mapped[str] = mapped_column(String, primary_key=True)
     state: Mapped[GroupState] = mapped_column(EnumDB(GroupState), default=GroupState.CREATING)
     rule_system: Mapped[str] = mapped_column(String, default="")
     changes_need_approval: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -191,20 +99,8 @@ class CategorySetting(Base):
     web_interface_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
     @staticmethod
-    def get_by_category(category_id: int) -> "CategorySetting":
-        """
-        Get the settings for a category.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        CategorySetting
-            The settings for the category.
-        """
+    def get_by_category(category_id: str) -> "CategorySetting":
+        """ Get the settings for a category. """
         with Session() as session:
             return (
                 session.query(CategorySetting)
@@ -213,20 +109,8 @@ class CategorySetting(Base):
             )
 
     @staticmethod
-    def create(category_id: int) -> "CategorySetting":
-        """
-        Create a new category setting.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        CategorySetting
-            The created category setting.
-        """
+    def create(category_id: str) -> "CategorySetting":
+        """ Create a new category setting with default values. """
         with Session() as session:
             category_setting = CategorySetting(category_id=category_id)
             session.add(category_setting)
@@ -234,15 +118,8 @@ class CategorySetting(Base):
             return category_setting
 
     @staticmethod
-    def delete(category_id: int) -> None:
-        """
-        Delete a category setting.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        """
+    def delete(category_id: str) -> None:
+        """ Delete a category setting. """
         with Session() as session:
             session.query(CategorySetting).filter(
                 CategorySetting.category_id == category_id
@@ -251,7 +128,7 @@ class CategorySetting(Base):
 
     @staticmethod
     def update(
-        category_id: int,
+        category_id: str,
         state: GroupState = None,
         rule_system: str = None,
         changes_need_approval: bool = None,
@@ -259,31 +136,7 @@ class CategorySetting(Base):
         hidden_rolls_allowed: bool = None,
         web_interface_enabled: bool = None,
     ) -> "CategorySetting":
-        """
-        Update a category setting.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-        state : GroupState
-            The state of the category.
-        rule_system : str
-            The rule system of the category.
-        changes_need_approval : bool
-            Whether or not changes need approval.
-        character_hidden : bool
-            Whether or not characters are hidden.
-        hidden_rolls_allowed : bool
-            Whether or not hidden rolls are allowed.
-        web_interface_enabled : bool
-            Whether or not the web interface is enabled.
-
-        Returns:
-        --------
-        CategorySetting
-            The updated category setting.
-        """
+        """ Update a category setting. If a parameter is None, it will not be updated. """
         with Session() as session:
             category_setting = (
                 session.query(CategorySetting)
@@ -307,28 +160,11 @@ class CategorySetting(Base):
 
 
 class CharacterHeader(Base):
-    """
-    A class representing the header in a charactersheet.
-
-    Attributes:
-    -----------
-    user_id : int
-        The unique identifier of the user.
-    category_id : int
-        The unique identifier of the category.
-    name : str
-        The unique name of the entry in this category for this user.
-    concept : str
-        The concept of the character.
-    description : str
-        The description of the character.
-    image_url : str
-        The image url of the character.
-    """
+    """ A class representing the header in a charactersheet. """
 
     __tablename__ = "character_headers"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
+    category_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, primary_key=True)
     concept: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
@@ -337,36 +173,14 @@ class CharacterHeader(Base):
 
     @staticmethod
     def create(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         concept: str,
         description: str = "",
         image_url: str = "",
     ) -> "CharacterHeader":
-        """
-        Create a new character header.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        concept : str
-            The concept of the character.
-        description : str
-            The description of the character.
-        image_url : str
-            The image url of the character.
-
-        Returns:
-        --------
-        CharacterHeader
-            The created character header.
-        """
+        """ Create a new character header. """
         with Session() as session:
             character_header = CharacterHeader(
                 user_id=user_id,
@@ -381,24 +195,8 @@ class CharacterHeader(Base):
             return character_header
 
     @staticmethod
-    def get(user_id: int, category_id: int, name: str) -> "CharacterHeader":
-        """
-        Get a character header.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-
-        Returns:
-        --------
-        CharacterHeader
-            The character header.
-        """
+    def get(user_id: str, category_id: str, name: str) -> "CharacterHeader":
+        """ Get a character header by user, category, and name. """
         with Session() as session:
             return (
                 session.query(CharacterHeader)
@@ -410,24 +208,9 @@ class CharacterHeader(Base):
                 .first()
             )
 
-    @lru_cache()
     @staticmethod
-    def get_available(user_id: int, category_id: int) -> list["CharacterHeader"]:
-        """
-        Get all available character headers for a user in a category.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        list[CharacterHeader]
-            A list of all available character headers for the user in the category.
-        """
+    def get_available(user_id: str, category_id: str) -> list["CharacterHeader"]:
+        """ Get all available character headers for a user in a category. """
         with Session() as session:
             return (
                 session.query(CharacterHeader)
@@ -437,29 +220,30 @@ class CharacterHeader(Base):
                 .all()
             )
 
-    @lru_cache()
     @staticmethod
-    def get_by_category(category_id: int) -> dict[tuple[int, str], list["CharacterHeader"]]:
-        """
-        Get all character headers for a category.
+    def find_by_name(category_id: str, name: str) -> list["CharacterHeader"]:
+        """ Find all character headers by name in a category. """
+        with Session() as session:
+            return (
+                session.query(CharacterHeader)
+                .filter(
+                    CharacterHeader.category_id == category_id,
+                    CharacterHeader.name.ilike(f"%{name}%"),
+                )
+                .all()
+            )
 
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        dict[tuple[int,str],list[CharacterHeader]]
-            A dictionary mapping the user and name to a list of character headers for the category.
-        """
+    @staticmethod
+    def get_by_category(category_id: str) -> dict[tuple[str, str], list["CharacterHeader"]]:
+        """ Get all character headers for a category grouped by user_id and character name."""
         with Session() as session:
             raw_result = (
                 session.query(CharacterHeader)
                 .filter(CharacterHeader.category_id == category_id)
                 .all()
             )
-        grouped_result: dict[tuple[int, str], list[CharacterHeader]] = {}
+
+        grouped_result: dict[tuple[str, str], list[CharacterHeader]] = {}
         for entry in raw_result:
             sheet_id = (entry.user_id, entry.name)
             if sheet_id not in grouped_result:
@@ -468,19 +252,8 @@ class CharacterHeader(Base):
         return grouped_result
 
     @staticmethod
-    def delete(user_id: int, category_id: int, name: str) -> None:
-        """
-        Delete a character header.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        """
+    def delete(user_id: str, category_id: str, name: str) -> None:
+        """ Delete a character header by user, category, and name. """
         with Session() as session:
             session.query(CharacterHeader).filter(
                 CharacterHeader.user_id == user_id,
@@ -491,32 +264,15 @@ class CharacterHeader(Base):
 
     @staticmethod
     def update(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         concept: str = None,
         description: str = None,
         image_url: str = None,
         is_inactive: bool = None,
     ) -> "CharacterHeader":
-        """
-        Update a character header.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        concept : str
-            The concept of the character.
-        description : str
-            The description of the character.
-        image_url : str
-            The image url of the character.
-        """
+        """ Update a character header identified by user, category, and name. """
         with Session() as session:
             character_header = (
                 session.query(CharacterHeader)
@@ -540,7 +296,7 @@ class CharacterHeader(Base):
 
 
 class AttributeType(Enum):
-    """An enum representing the type of an attribute."""
+    """An enum representing the type of an attribute for grouping of character values."""
 
     ATTRIBUTE = "attribute"
     SKILL = "skill"
@@ -550,26 +306,11 @@ class AttributeType(Enum):
 
 
 class CharactersheetEntry(Base):
-    """
-    A class representing an entry in a charactersheet.
-
-    Attributes:
-    -----------
-    user_id : int
-        The unique identifier of the user.
-    category_id : int
-        The unique identifier of the category.
-    name : str
-        The unique name of the entry in this category for this user.
-    sheet_key : str
-        The key of the entry.
-    value : int
-        The value of the entry.
-    """
+    """ A class representing an entry in a charactersheet. """
 
     __tablename__ = "charactersheet_entries"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
+    category_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, primary_key=True)
     sheet_key: Mapped[str] = mapped_column(String, primary_key=True)
     value: Mapped[int] = mapped_column(Integer)
@@ -578,24 +319,8 @@ class CharactersheetEntry(Base):
     )
 
     @staticmethod
-    def get(user_id: int, category_id: int, name: str) -> list["CharactersheetEntry"]:
-        """
-        Get a charactersheet entry.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-
-        Returns:
-        --------
-        CharactersheetEntry
-            The charactersheet entry.
-        """
+    def get(user_id: str, category_id: str, name: str) -> list["CharactersheetEntry"]:
+        """ Get a charactersheet entry. """
         with Session() as session:
             return (
                 session.query(CharactersheetEntry)
@@ -604,24 +329,12 @@ class CharactersheetEntry(Base):
                     CharactersheetEntry.category_id == category_id,
                     CharactersheetEntry.name == name,
                 )
-                .first()
+                .all()
             )
 
     @staticmethod
-    def get_by_category(category_id: int) -> dict[tuple[int, str], list["CharactersheetEntry"]]:
-        """
-        Get all charactersheet entries for a category.
-
-        Parameters:
-        -----------
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        dict[tuple[int,str],list[CharactersheetEntry]]
-            A dictionary mapping the user and name to a list of charactersheet entries for the category.
-        """
+    def get_by_category(category_id: str) -> dict[tuple[int, str], list["CharactersheetEntry"]]:
+        """ Get all charactersheet entries for a category grouped by user_id and character name. """
         with Session() as session:
             raw_result = (
                 session.query(CharactersheetEntry)
@@ -637,19 +350,9 @@ class CharactersheetEntry(Base):
         return grouped_result
 
     @staticmethod
-    def get_by_user(user_id: int) -> dict[tuple[int, str], list["CharactersheetEntry"]]:
+    def get_by_user(user_id: str) -> dict[tuple[int, str], list["CharactersheetEntry"]]:
         """
-        Get all charactersheet entries for a user.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-
-        Returns:
-        --------
-        dict[tuple[int,str],list[CharactersheetEntry]]
-            A dictionary mapping the category and name to a list of charactersheet entries for the user.
+        Get all charactersheet entries for a user grouped by category_id and character name.
         """
         with Session() as session:
             raw_result = (
@@ -666,22 +369,8 @@ class CharactersheetEntry(Base):
         return grouped_result
 
     @staticmethod
-    def get_by_user_and_category(user_id: int, category_id: int) -> list["CharactersheetEntry"]:
-        """
-        Get all charactersheet entries for a user in a category.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-
-        Returns:
-        --------
-        list[CharactersheetEntry]
-            A list of all charactersheet entries for the user in the category.
-        """
+    def get_by_user_and_category(user_id: str, category_id: str) -> list["CharactersheetEntry"]:
+        """ Get all charactersheet entries for a user in a category. """
         with Session() as session:
             return (
                 session.query(CharactersheetEntry)
@@ -694,36 +383,14 @@ class CharactersheetEntry(Base):
 
     @staticmethod
     def create(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         sheet_key: str,
         value: int,
         attribute_type: AttributeType = AttributeType.UNKNOWN,
     ) -> "CharactersheetEntry":
-        """
-        Create a new charactersheet entry.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        sheet_key : str
-            The key of the entry.
-        value : int
-            The value of the entry.
-        attribute_type : AttributeType
-            The type of the attribute.
-
-        Returns:
-        --------
-        CharactersheetEntry
-            The created charactersheet entry.
-        """
+        """ Create a new charactersheet entry. """
         with Session() as session:
             charactersheet_entry = CharactersheetEntry(
                 user_id=user_id,
@@ -738,19 +405,8 @@ class CharactersheetEntry(Base):
             return charactersheet_entry
 
     @staticmethod
-    def delete(user_id: int, category_id: int, name: str) -> None:
-        """
-        Delete a charactersheet entry.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        """
+    def delete(user_id: str, category_id: str, name: str) -> None:
+        """ Delete a charactersheet entry. """
         with Session() as session:
             session.query(CharactersheetEntry).filter(
                 CharactersheetEntry.user_id == user_id,
@@ -760,21 +416,8 @@ class CharactersheetEntry(Base):
             session.commit()
 
     @staticmethod
-    def remove_key(user_id: int, category_id: int, name: str, sheet_key: str) -> None:
-        """
-        Remove the key of a charactersheet entry.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        sheet_key : str
-            The key of the entry.
-        """
+    def remove_key(user_id: str, category_id: str, name: str, sheet_key: str) -> None:
+        """ Remove the key of a charactersheet entry. """
         with Session() as session:
             session.query(CharactersheetEntry).filter(
                 CharactersheetEntry.user_id == user_id,
@@ -786,36 +429,14 @@ class CharactersheetEntry(Base):
 
     @staticmethod
     def update(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         sheet_key: str,
         value: int = None,
         attribute_type: AttributeType = None,
     ) -> "CharactersheetEntry":
-        """
-        Update a charactersheet entry.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        sheet_key : str
-            The key of the entry.
-        value : int
-            The value of the entry.
-        attribute_type : AttributeType
-            The type of the attribute.
-
-        Returns:
-        --------
-        CharactersheetEntry
-            The updated charactersheet entry.
-        """
+        """ Update a charactersheet entry. """
         with Session() as session:
             charactersheet_entry = (
                 session.query(CharactersheetEntry)
@@ -827,6 +448,16 @@ class CharactersheetEntry(Base):
                 )
                 .first()
             )
+            if not charactersheet_entry:
+                charactersheet_entry = CharactersheetEntry(
+                    user_id=user_id,
+                    category_id=category_id,
+                    name=name,
+                    sheet_key=sheet_key,
+                    value=value,
+                    attribute_type=attribute_type,
+                )
+                session.add(charactersheet_entry)
             if value is not None:
                 charactersheet_entry.value = value
             if attribute_type is not None:
@@ -847,31 +478,12 @@ class SheetModification(Base):
     """
     A class representing a modification to a charactersheet.
 
-    Attributes:
-    -----------
-    user_id : int
-        The unique identifier of the user.
-    category_id : int
-        The unique identifier of the category.
-    name : str
-        The unique name of the entry in this category for this user.
-    sheet_key : str
-        The key of the entry.
-    value : int
-        The value of the entry.
-    attribute_type : AttributeType
-        The type of the attribute.
-    status : str
-        The status of the modification.
-    comment : str
-        The comment of the modification.
-    created_at : datetime.datetime
-        The time the modification was created.
+    This can be a new entry, a change to an existing entry, or a deletion. And has a status of pending, approved, or rejected to be managed by the GM.
     """
 
     __tablename__ = "sheet_modifications"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    category_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
+    category_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String, primary_key=True)
     sheet_key: Mapped[str] = mapped_column(String, primary_key=True)
     value: Mapped[int] = mapped_column(Integer)
@@ -887,26 +499,8 @@ class SheetModification(Base):
     )
 
     @staticmethod
-    def get_key(user_id: int, category_id: int, name: str, sheet_key: str) -> "SheetModification":
-        """
-        Get a sheet modification by key.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-        sheet_key : str
-            The key of the entry.
-
-        Returns:
-        --------
-        SheetModification
-            The sheet modification.
-        """
+    def get_key(user_id: str, category_id: str, name: str, sheet_key: str) -> "SheetModification":
+        """ Get a sheet modification by key. """
         with Session() as session:
             return (
                 session.query(SheetModification)
@@ -920,24 +514,8 @@ class SheetModification(Base):
             )
 
     @staticmethod
-    def get(user_id: int, category_id: int, name: str) -> list["SheetModification"]:
-        """
-        Get a sheet modification.
-
-        Parameters:
-        -----------
-        user_id : int
-            The unique identifier of the user.
-        category_id : int
-            The unique identifier of the category.
-        name : str
-            The unique name of the entry in this category for this user.
-
-        Returns:
-        --------
-        SheetModification
-            The sheet modification.
-        """
+    def get(user_id: str, category_id: str, name: str) -> list["SheetModification"]:
+        """ Get a sheet modification. """
         with Session() as session:
             return (
                 session.query(SheetModification)
@@ -946,11 +524,11 @@ class SheetModification(Base):
                     SheetModification.category_id == category_id,
                     SheetModification.name == name,
                 )
-                .first()
+                .all()
             )
 
     @staticmethod
-    def get_by_category(category_id: int) -> dict[tuple[int, str], list["SheetModification"]]:
+    def get_by_category(category_id: str) -> dict[tuple[int, str], list["SheetModification"]]:
         """
         Get all sheet modifications for a category.
 
@@ -979,7 +557,7 @@ class SheetModification(Base):
         return grouped_result
 
     @staticmethod
-    def get_by_user(user_id: int) -> dict[tuple[int, str], list["SheetModification"]]:
+    def get_by_user(user_id: str) -> dict[tuple[int, str], list["SheetModification"]]:
         """
         Get all sheet modifications for a user.
 
@@ -1006,7 +584,7 @@ class SheetModification(Base):
         return grouped_result
 
     @staticmethod
-    def get_by_user_and_category(user_id: int, category_id: int) -> list["SheetModification"]:
+    def get_by_user_and_category(user_id: str, category_id: str) -> list["SheetModification"]:
         """
         Get all sheet modifications for a user in a category.
 
@@ -1034,8 +612,8 @@ class SheetModification(Base):
 
     @staticmethod
     def create(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         sheet_key: str,
         value: int,
@@ -1080,7 +658,7 @@ class SheetModification(Base):
             return sheet_modification
 
     @staticmethod
-    def delete(user_id: int, category_id: int, name: str) -> None:
+    def delete(user_id: str, category_id: str, name: str) -> None:
         """
         Delete a sheet modification.
 
@@ -1103,8 +681,8 @@ class SheetModification(Base):
 
     @staticmethod
     def update(
-        user_id: int,
-        category_id: int,
+        user_id: str,
+        category_id: str,
         name: str,
         sheet_key: str,
         value: int = None,
@@ -1354,7 +932,7 @@ class RuleSystemSuggestions(Base):
     """
 
     __tablename__ = "rule_system_suggestions"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
     rule_system: Mapped[str] = mapped_column(String)
     suggested_key: Mapped[str] = mapped_column(String)
     suggested_value: Mapped[str] = mapped_column(String)
@@ -1413,7 +991,7 @@ class RuleSystemSuggestions(Base):
             return rule_system_suggestion
 
     @staticmethod
-    def delete(rule_system_id: int) -> None:
+    def delete(rule_system_id: str) -> None:
         """
         Delete a rule system suggestion.
 
@@ -1428,7 +1006,7 @@ class RuleSystemSuggestions(Base):
 
     @staticmethod
     def update(
-        rule_system_id: int, suggested_key: str = None, suggested_value: str = None
+        rule_system_id: str, suggested_key: str = None, suggested_value: str = None
     ) -> "RuleSystemSuggestions":
         """
         Update a rule system suggestion.

@@ -1,5 +1,7 @@
 """This module contains the NSCGen extension with a command to generate random NSC characters."""
+
 import random
+from collections import Counter
 
 from interactions import (
     Embed,
@@ -12,15 +14,17 @@ from interactions import (
     slash_option,
 )
 
-import app.library.aengste as aengste
-import app.library.charaktereigenschaften as charaktereigenschaften
-import app.library.plaene as plaene
+import app.library.nsc_gen.aengste as aengste
+import app.library.nsc_gen.charaktereigenschaften as charaktereigenschaften
+import app.library.nsc_gen.plaene as plaene
 import app.localizer as localizer
-from app.library.speciesnames import names as btw_names
+from app.library.nsc_gen.speciesnames import names as btw_names
+from app.library.nsc_gen.beziehungen import get_random as get_random_beziehungen
 
 
 class NSCGen(Extension):
     """An extension for generating random NSC characters."""
+
     async def async_start(self):
         """Print a message when the extension is started."""
         print("Starting NSCGen Extension")
@@ -113,30 +117,49 @@ class NSCGen(Extension):
         if nymph:
             available_species.append("Nymph")
         embeds = []
-        for _ in range(count):
-            if not available_species:
-                species = localizer.translate(ctx.locale, "unbekannt")
-                name = localizer.translate(ctx.locale, "unbekannt")
-            else:
-                species = random.choice(available_species)
-                name = random.choice(btw_names[species])
+        if available_species:
+            species_count = Counter(random.choice(available_species) for _ in range(count))
+            names = [
+                (name,species)
+                for species, member_count in species_count.items()
+                for name in random.sample(btw_names[species], member_count)
+            ]
+        else:
+            names = [
+                (localizer.translate(ctx.locale, "unbekannt"),localizer.translate(ctx.locale, "unbekannt"))
+                for _ in range(count)
+            ]
+
+        for name,species in names:
             embed = Embed(
                 title=name,
-                description=", ".join(charaktereigenschaften.get_random() for _ in range(3)),
+                description=", ".join(
+                    charaktereigenschaften.get_random(ctx.locale) for _ in range(3)
+                ),
             )
             embed.add_field(
-                name=localizer.translate(ctx.locale, "species"), value=species, inline=False
+                name=localizer.translate(ctx.locale, "species"),
+                value=species,
+                inline=False,
             )
-            nsc_plaene = f"*{plaene.get_random_gross()}*"  # TODO: LOCALIZATION FLAG
-            smallplans = []
-            for _ in range(random.randint(0, 3)):
-                new_plan = plaene.get_random_klein(exclude=smallplans)
-                smallplans.append(new_plan)
-                nsc_plaene += "\n" + new_plan
-            embed.add_field(name=localizer.translate(ctx.locale, "pläne"), value=nsc_plaene)
+            nsc_plaene = f"*{plaene.get_random_gross(ctx.locale)}*"
+            nsc_plaene += "\n".join(plaene.get_random_klein(ctx.locale,random.randint(0, 3)))
+            embed.add_field(
+                name=localizer.translate(ctx.locale, "pläne"), value=nsc_plaene
+            )
             embed.add_field(
                 name=localizer.translate(ctx.locale, "ängste"),
-                value="\n".join(aengste.get_randoms(random.randint(1, 3))),
+                value="\n".join(aengste.get_randoms(ctx.locale, random.randint(1, 3))),
             )
+            if count > 1:
+                others = [
+                    name
+                    for other_name in names
+                    if other_name != name
+                ]
+                embed.add_field(
+                    name=localizer.translate(ctx.locale, "beziehungen"),
+                    value="\n".join(f'* {get_random_beziehungen(ctx.locale)} {other}' for other in others),
+                )
             embeds.append(embed)
         await ctx.send(embeds=embeds, ephemeral=True)

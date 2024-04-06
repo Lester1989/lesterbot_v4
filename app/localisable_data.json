@@ -758,5 +758,17 @@
     "wait_for_your_gm_to_approve_them": {
         "de": "Warte darauf dass dein GM sie genehmigt",
         "en": "wait for your GM to approve them"
+    },
+    "beziehungen": {
+        "de": "Beziehungen",
+        "en": "Relationships"
+    },
+    "characters": {
+        "de": "Charaktere",
+        "en": "Characters"
+    },
+    "no_characters_created": {
+        "de": "Keine Charaktere erstellt",
+        "en": "No characters created"
     }
 }
