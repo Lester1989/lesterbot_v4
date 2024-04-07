@@ -1,4 +1,5 @@
 """Werewolf: The Apocalypse 20th Anniversary Edition extension for Polydice."""
+
 import re
 
 import aiohttp
@@ -33,6 +34,7 @@ regex_pattern = re.compile(r"show_gift_(.*)")
 
 class WerewolfW20(Extension):
     """An extension for Werewolf: The Apocalypse 20th Anniversary Edition."""
+
     gifts: list[Gift] = []
     gift_names: list[str] = []
 
@@ -42,7 +44,9 @@ class WerewolfW20(Extension):
         self.gift_names = [gift.name.lower() for gift in self.gifts]
         print("Starting Werewolf Extension")
 
-    @slash_command(name="ww", description=LocalisedDesc(**localizer.translations("ww_description")))
+    @slash_command(
+        name="ww", description=LocalisedDesc(**localizer.translations("ww_description"))
+    )
     @slash_option(
         name="number",
         description=LocalisedDesc(**localizer.translations("number_description")),
@@ -69,7 +73,9 @@ class WerewolfW20(Extension):
     )
     @slash_option(
         name="spent_willpower",
-        description=LocalisedDesc(**localizer.translations("spent_willpower_description")),
+        description=LocalisedDesc(
+            **localizer.translations("spent_willpower_description")
+        ),
         required=False,
         opt_type=OptionType.BOOLEAN,
     )
@@ -142,7 +148,10 @@ class WerewolfW20(Extension):
 
     async def display_gift(self, ctx: SlashContext, gift_name: str):
         """Display the gift description."""
-        gift = next((gift for gift in self.gifts if gift.name.lower() == gift_name.lower()), None)
+        gift = next(
+            (gift for gift in self.gifts if gift.name.lower() == gift_name.lower()),
+            None,
+        )
         if gift is None:
             await ctx.send(
                 localizer.translate(
@@ -150,7 +159,9 @@ class WerewolfW20(Extension):
                 )
             )
             return
-        embed = Embed(title=gift.name, description=gift.description_fluff, color=0xFFFFFF)
+        embed = Embed(
+            title=gift.name, description=gift.description_fluff, color=0xFFFFFF
+        )
         embed.add_field(
             name=localizer.translate(ctx.locale, "system"),
             value=gift.description_system,
@@ -211,11 +222,15 @@ class WerewolfW20(Extension):
 
     @slash_command(
         name="list_gifts_for",
-        description=LocalisedDesc(**localizer.translations("list_gifts_for_description")),
+        description=LocalisedDesc(
+            **localizer.translations("list_gifts_for_description")
+        ),
     )
     @slash_option(
         name="auspice",
-        description=LocalisedDesc(**localizer.translations("the_auspice_to_filter_for")),
+        description=LocalisedDesc(
+            **localizer.translations("the_auspice_to_filter_for")
+        ),
         required=False,
         opt_type=OptionType.STRING,
         choices=[
@@ -236,7 +251,9 @@ class WerewolfW20(Extension):
             SlashCommandChoice(name="Glaswandler", value="Glaswandler"),
             SlashCommandChoice(name="Kinder Gaias", value="Kinder Gaias"),
             SlashCommandChoice(name="Knochenbeißer", value="Knochenbeißer"),
-            SlashCommandChoice(name="Nachfahren des Fenris", value="Nachfahren des Fenris"),
+            SlashCommandChoice(
+                name="Nachfahren des Fenris", value="Nachfahren des Fenris"
+            ),
             SlashCommandChoice(name="Rote Klauen", value="Rote Klauen"),
             SlashCommandChoice(name="Schattenlords", value="Schattenlords"),
             SlashCommandChoice(name="Schwarze Furien", value="Schwarze Furien"),
@@ -246,7 +263,8 @@ class WerewolfW20(Extension):
             SlashCommandChoice(name="Uktena", value="Uktena"),
             SlashCommandChoice(name="Wendigo", value="Wendigo"),
             SlashCommandChoice(
-                name="Tänzer der schwarzen Spirale", value="Tänzer der schwarzen Spirale"
+                name="Tänzer der schwarzen Spirale",
+                value="Tänzer der schwarzen Spirale",
             ),
         ],
     )
@@ -286,11 +304,7 @@ class WerewolfW20(Extension):
         """List all gifts."""
         buttons: list[Button] = []
         part_counter = 1
-        print("list_gifts_for")
-        print(f"auspice: {auspice}")
-        print(f"tribe: {tribe}")
-        print(f"breed: {breed}")
-        print(f"rank: {rank}")
+
         for gift in self.gifts:
             if (
                 (auspice is None or auspice.lower() in gift.available_for.lower())
@@ -305,9 +319,7 @@ class WerewolfW20(Extension):
                         custom_id=f"show_gift_{gift.name}",
                     )
                 )
-                print(f"Added {gift.name}")
                 if len(buttons) >= 25:
-                    print(f"Sent {part_counter} with {len(buttons)} buttons")
                     await ctx.send(
                         localizer.translate(
                             ctx.locale, "gifts_part_counter", part_counter=part_counter
@@ -318,7 +330,9 @@ class WerewolfW20(Extension):
                     part_counter += 1
         if len(buttons) > 0:
             await ctx.send(
-                localizer.translate(ctx.locale, "gifts_part_counter", part_counter=part_counter),
+                localizer.translate(
+                    ctx.locale, "gifts_part_counter", part_counter=part_counter
+                ),
                 components=spread_to_rows(*buttons),
             )
             part_counter += 1
@@ -340,6 +354,8 @@ class WerewolfW20(Extension):
         else:
             await ctx.send(
                 localizer.translate(
-                    ctx.locale, "could_not_find_gift_ctxcustom_id", ctxcustom_id=ctx.custom_id
+                    ctx.locale,
+                    "could_not_find_gift_ctxcustom_id",
+                    ctxcustom_id=ctx.custom_id,
                 )
             )

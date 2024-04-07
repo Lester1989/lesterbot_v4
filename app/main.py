@@ -104,61 +104,6 @@ async def get_test_list(ctx: SlashContext):
         )
 
 
-# Extension: PolyDice
-# [X] roll_successes
-# [X] roll_sum
-
-# Extension: WerewolfW20
-# [X] list_gifts_for
-# [X] show_gift
-# [X] upload_gifts
-# [X] ww
-
-# Extension: NSCGen
-# [X] btw_new (not localized)
-
-# Extension: RollComplex
-# [X] roll_complex
-# [X] named_roll
-# [X] roll_help
-# [X] save_roll
-
-# Extension: CharSheetManager
-# [ ] add_attribute
-# [ ] add_gm
-# [ ] add_player
-# [ ] approve_all_changes
-# [ ] approve_change
-# [ ] create_character
-# [ ] creation_finished
-# [ ] delete_character
-# [ ] gm_roll_initiative
-# [ ] list_pending_changes
-# [ ] reject_all_changes
-# [ ] reject_change
-# [ ] remove_player
-# [ ] resign_gm
-# [ ] set_rule_system
-# [ ] show_character
-# [ ] show_group
-# [ ] start_group
-# [ ] update_character
-
-# Extension: InitiativeTracker
-# [ ] initiative_delete
-# [X] initiative_help
-# [X] initiative_insert_after
-# [ ] initiative_insert_before
-# [ ] initiative_insert_first
-# [ ] initiative_insert_last
-# [ ] initiative_remove
-# [ ] initiative_show
-# [X] initiative
-
-# Extension: NoneType
-# [ ] my_version
-# [ ] open_todos
-# [ ] get_test_list
 
 
 if __name__ == "__main__":
