@@ -186,7 +186,7 @@ class DicePoolExclusionsSum(DicePoolResult):
                 if dice in self.excluded:
                     formatted_dice = f"~~{formatted_dice}~~"
                 result += f"{formatted_dice}, "
-        return result
+        return f"{result.strip().strip(',')} -> {self.sum}"
 
 
 @dataclass

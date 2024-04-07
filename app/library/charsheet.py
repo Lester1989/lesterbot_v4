@@ -644,7 +644,7 @@ class SheetModification(Base):
             The created sheet modification.
         """
         with Session() as session:
-            sheet_modification = SheetModification(
+            sheet_modification = SheetModification.get_key(user_id, category_id, name, sheet_key) or SheetModification(
                 user_id=user_id,
                 category_id=category_id,
                 name=name,
@@ -653,7 +653,12 @@ class SheetModification(Base):
                 comment=comment,
                 attribute_type=attribute_type,
             )
-            session.add(sheet_modification)
+            sheet_modification.status = ModificationState.PENDING
+            sheet_modification.created_at = datetime.datetime.now(datetime.timezone.utc)
+            sheet_modification.value = value
+            sheet_modification.attribute_type = attribute_type
+            sheet_modification.comment = comment
+            session.merge(sheet_modification)
             session.commit()
             return sheet_modification
 
@@ -724,6 +729,7 @@ class SheetModification(Base):
                     SheetModification.user_id == user_id,
                     SheetModification.category_id == category_id,
                     SheetModification.name == name,
+                    SheetModification.sheet_key == sheet_key,
                 )
                 .first()
             )
@@ -735,7 +741,6 @@ class SheetModification(Base):
                 sheet_modification.status = status
             if comment is not None:
                 sheet_modification.comment = comment
-            sheet_modification.sheet_key = sheet_key
             session.commit()
             return sheet_modification
 
@@ -775,10 +780,11 @@ class RuleSystemRolls(Base):
                 .replace("  ", " ")
                 .strip()
             )
-            needed_sheet_values.update(pruned_block.split(" "))
-        return needed_sheet_values
+            attributes = [elem for elem in pruned_block.split(" ") if not elem.isdigit()]
+            needed_sheet_values.update(attributes)
+        return list(needed_sheet_values)
 
-    def eval(self, sheet_values: dict[str, int]) -> int:
+    def eval(self, sheet_values: dict[str, int]) -> str:
         """
         Evaluate the roll.
 
@@ -797,8 +803,8 @@ class RuleSystemRolls(Base):
         for formula_block in formula_blocks:
             formula = formula_block
             for sheet_key, value in sheet_values.items():
-                formula = formula.replace(sheet_key, value)
-            eval_roll = eval_roll.replace(f"{{{formula_block}}}", eval(formula))
+                formula = formula.replace(sheet_key, str(value))
+            eval_roll = eval_roll.replace(f"{{{formula_block}}}", str(eval(formula)))
         return eval_roll
 
     @staticmethod
@@ -868,7 +874,7 @@ class RuleSystemRolls(Base):
         """
         with Session() as session:
             rule_system_roll = RuleSystemRolls(rule_system=rule_system, name=name, roll=roll)
-            session.add(rule_system_roll)
+            session.merge(rule_system_roll)
             session.commit()
             return rule_system_roll
 

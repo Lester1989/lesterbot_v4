@@ -191,3 +191,121 @@ class TestCommands(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(actions[0].message["content"] == "Alle 1 Änderungen genehmigt für char2", actions[0].message)
 
 
+        print("make unreasonable change")
+        special_context_kwargs['test_ctx_author'] = self.fake_guild.members[1]
+        actions = await call_slash(
+            CharSheetManager.add_attribute,
+            **special_context_kwargs,
+            name="char2",
+            attribute_name="attribute2",
+            attribute_value="500",
+            attribute_type="general")
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue("wartet auf Genehmigung" in actions[0].message["content"], actions[0].message)
+        actions = await call_slash(
+            CharSheetManager.list_pending_changes,
+            **special_context_kwargs,
+            name="char2",
+            )
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue("attribute2" in actions[0].message["embeds"][0]["fields"][0]["value"], actions[0].message)
+
+        print("check changes again")
+        special_context_kwargs['test_ctx_author'] = self.fake_guild.members[0]
+        actions = await call_slash(
+            CharSheetManager.list_pending_changes,
+            **special_context_kwargs,
+            name="char2",
+            )
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue("attribute2" in actions[0].message["embeds"][0]["fields"][0]["value"], actions[0].message)
+
+        print("reject changes")
+        actions = await call_slash(
+            CharSheetManager.reject_all_changes,
+            **special_context_kwargs,
+            name="char2",
+            reason="to much")
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[0].message["content"] == "Alle 1 Änderungen abgelehnt für char2", actions[0].message)
+
+        print("check changes again")
+        special_context_kwargs['test_ctx_author'] = self.fake_guild.members[0]
+        actions = await call_slash(
+            CharSheetManager.list_pending_changes,
+            **special_context_kwargs,
+            name="char2",
+            )
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[0].message["content"] == "Keine ausstehenden Änderungen", actions[0].message)
+
+        print("make changes")
+        special_context_kwargs['test_ctx_author'] = self.fake_guild.members[1]
+        actions = await call_slash(
+            CharSheetManager.add_attribute,
+            **special_context_kwargs,
+            name="char2",
+            attribute_name="attribute3",
+            attribute_value="5",
+            attribute_type="general")
+        actions = await call_slash(
+            CharSheetManager.add_attribute,
+            **special_context_kwargs,
+            name="char2",
+            attribute_name="attribute4",
+            attribute_value="500",
+            attribute_type="general")
+        
+        print("selectivly approve/reject changes")
+        special_context_kwargs['test_ctx_author'] = self.fake_guild.members[0]
+        actions = await call_slash(
+            CharSheetManager.approve_change,
+            **special_context_kwargs,
+            name="char2",
+            attribute_name="attribute3")
+        actions = await call_slash(
+            CharSheetManager.reject_change,
+            **special_context_kwargs,
+            name="char2",
+            attribute_name="attribute4",
+            reason="to much")
+        actions = await call_slash(
+            CharSheetManager.list_pending_changes,
+            **special_context_kwargs,
+            name="char2")
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[0].message["content"] == "Keine ausstehenden Änderungen", actions[0].message)
+
+        print("set initiative roll")
+        actions = await call_slash(
+            CharSheetManager.set_initiative_roll,
+            **special_context_kwargs,
+            roll="{attribute1}d6+2",
+            rule_system="sw ffg")
+        self.assertTrue(len(actions) == 1, "Expected a single action")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[0].message['content'] == "Initiative-Wurf gesetzt" , actions[0].message)
+
+        print("check initiative roll")
+        actions = await call_slash(
+            CharSheetManager.gm_roll_initiative,
+            **special_context_kwargs
+            )
+        self.assertTrue(len(actions) == 2, f"Expected a single action {actions}")
+        self.assertTrue(actions[0].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[1].action_type == ActionType.SEND, "Expected a message to be sent")
+        self.assertTrue(actions[0].message['content'] == "Fehlende Werte für char3: attribute1" , actions[0].message)
+        self.assertTrue("char2" in actions[1].message['content'], actions[1].message)
+
+
+
+
+
+
+

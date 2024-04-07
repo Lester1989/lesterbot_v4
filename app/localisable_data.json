@@ -770,5 +770,17 @@
     "no_characters_created": {
         "de": "Keine Charaktere erstellt",
         "en": "No characters created"
+    },
+    "initiative_roll_set": {
+        "de": "Initiative-Wurf gesetzt",
+        "en": "Initiative roll set"
+    },
+    "set_initiative_roll_rule_system_description": {
+        "de": "Setzt den Initiative-Wurf für das Regelwerk",
+        "en": "Sets the initiative roll for the rule system"
+    },
+    "set_initiative_roll_roll_description": {
+        "de": "Der Wurf für die Initiative",
+        "en": "The roll for the initiative"
     }
 }

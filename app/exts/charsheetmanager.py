@@ -1040,6 +1040,27 @@ class CharSheetManager(Extension):
         self.change_attribute_name_autocomplete(ctx)
 
     @slash_command(
+        name="set_initiative_roll",
+    )
+    @slash_option(
+        name="rule_system",
+        description=LocalisedDesc(**localizer.translations("set_initiative_roll_rule_system_description")),
+        required=True,
+        opt_type=OptionType.STRING,
+    )
+    @slash_option(
+        name="roll",
+        description=LocalisedDesc(**localizer.translations("set_initiative_roll_roll_description")),
+        required=True,
+        opt_type=OptionType.STRING,
+    )
+    @check(is_gm)
+    async def set_initiative_roll(self, ctx: SlashContext, rule_system: str, roll: str):
+        """Sets the initiative roll for the group."""
+        RuleSystemRolls.create(rule_system, "INITIATIVE", roll)
+        await ctx.send(localizer.translate(ctx.locale, "initiative_roll_set"))
+
+    @slash_command(
         name="gm_roll_initiative",
         description=LocalisedDesc(
             **localizer.translations("gm_roll_initiative_description")
@@ -1111,7 +1132,7 @@ class CharSheetManager(Extension):
                             "missing_values_for_charactername__joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys",
                             charactername=character.name,
                             _joininitiative_ruleneeded_sheet_values__setsheet_entrieskeys=", ".join(
-                                initiative_rule.needed_sheet_values
+                                set(initiative_rule.needed_sheet_values)
                                 - set(sheet_entries.keys())
                             ),
                         )
@@ -1125,7 +1146,7 @@ class CharSheetManager(Extension):
                 npc_roll
             ).build_pool()
         results = [
-            (player_name, player_pool.roll())
+            (player_name, player_pool.roll().formatted())
             for player_name, player_pool in player_rolls.items()
         ]
         for player_name, player_roll in sorted(
