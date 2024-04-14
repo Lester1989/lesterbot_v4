@@ -126,9 +126,13 @@ class WerewolfW20(Extension):
         )
         embed.add_field(
             name=localizer.translate(ctx.locale, "successes"),
-            value=f"{result.successes} + {result.pool_modifier}",
+            value=f"{result.successes}",
             inline=False,
         )
+        if spent_willpower:
+            embed.set_footer(
+                text=localizer.translate(ctx.locale, "willpower_spent_footer")
+            )
         await ctx.send(embed=embed)
 
     @slash_command(

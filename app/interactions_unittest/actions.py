@@ -6,7 +6,6 @@ from abc import ABC
 from enum import Enum
 import time
 from typing import Optional
-from asyncio import sleep
 
 
 class ActionType(str, Enum):
@@ -55,6 +54,21 @@ class SendAction(BaseAction):
         super().__init__()
         self.message = message
 
+    @property
+    def content(self) -> str:
+        """The content of the message."""
+        return self.message.get("content", "")
+
+    @property
+    def embeds(self) -> list[dict]:
+        """The embeds of the message."""
+        return self.message.get("embeds", [])
+
+    @property
+    def components(self) -> list[dict]:
+        """The components of the message."""
+        return self.message.get("components", [])
+
 
 class DeleteAction(BaseAction):
     """The delete action class with message_id attribute."""
@@ -76,16 +90,14 @@ class DeleteAction(BaseAction):
         self.reason = reason
 
 
-class EditAction(BaseAction):
+class EditAction(SendAction):
     """The edit action class with message attribute."""
 
     action_type = ActionType.EDIT
-    message: dict
     channel_id: Optional[int]
 
     def __init__(self, message: dict, channel_id: Optional[int] = None):
-        super().__init__()
-        self.message = message
+        super().__init__(message)
         self.channel_id = channel_id
 
 

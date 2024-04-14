@@ -782,5 +782,9 @@
     "set_initiative_roll_roll_description": {
         "de": "Der Wurf für die Initiative",
         "en": "The roll for the initiative"
+    },
+    "willpower_spent_footer": {
+        "de": "Willenskraft ausgegeben +1 Erfolg eingerechnet",
+        "en": "Willpower spent +1 success included"
     }
 }
