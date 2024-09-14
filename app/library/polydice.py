@@ -11,6 +11,7 @@ class ExplodingBehavior(IntEnum):
     NONE = 0
     ONCE = 1
     CASCADING = 2
+    PLUSSUCCESS = 3
 
 
 @dataclass
@@ -69,6 +70,7 @@ class DicePoolResultSuccesses(DicePoolResult):
 
     success_threshold: int = -1
     failure_threshold: int = -1
+    high_exploding: ExplodingBehavior = ExplodingBehavior.NONE
 
     @property
     def successes(self):
@@ -79,6 +81,8 @@ class DicePoolResultSuccesses(DicePoolResult):
                 [dice for dice in self.all_result if dice.value <= self.failure_threshold]
             )
         successes += self.pool_modifier
+        if self.high_exploding == ExplodingBehavior.PLUSSUCCESS:
+            successes += len([dice for dice in self.dice_results if dice.value == dice.sides])
         return successes
 
 
@@ -428,6 +432,7 @@ def roll_dice_successes(
         extra_dice=extra_dice,
         success_threshold=threshold,
         failure_threshold=1 if low_subtracion else -1,
+        high_exploding=high_exploding,
     )
 
 
@@ -451,7 +456,7 @@ def format_dice_result(dice_result: DiceResult):
     return f"{crit_md}{dice_result.result}{crit_md} {modifier}"
 
 
-def format_dice_success_result(dice_result: DiceResult, threshold: int, low_subtracting: int = -1):
+def format_dice_success_result(dice_result: DiceResult, threshold: int, low_subtracting: int = -1, high_exploding: ExplodingBehavior = ExplodingBehavior.NONE):
     """
     Formats a DiceResult object as a string.
 
@@ -472,4 +477,6 @@ def format_dice_success_result(dice_result: DiceResult, threshold: int, low_subt
         modifier = f"({dice_result.dice_modifier}) -> {success_md}{dice_result.value}{success_md}"
     else:
         modifier = ""
+    if high_exploding != ExplodingBehavior.NONE and dice_result.result == dice_result.sides:
+        modifier = f"{modifier} :boom:"
     return f"{success_md}{dice_result.result}{success_md} {modifier}"

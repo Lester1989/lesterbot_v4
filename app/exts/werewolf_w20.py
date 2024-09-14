@@ -89,10 +89,11 @@ class WerewolfW20(Extension):
         spent_willpower: bool = False,
     ):
         """Rolls a number of dice and counts the number of successes."""
+        exploding = ExplodingBehavior.PLUSSUCCESS if specialty else ExplodingBehavior.NONE
         result = roll_dice_successes(
             number,
             10,
-            ExplodingBehavior.ONCE if specialty else ExplodingBehavior.NONE,
+            exploding,
             ones_cancel,
             0,
             1 if spent_willpower else 0,
@@ -118,7 +119,7 @@ class WerewolfW20(Extension):
             name=localizer.translate(ctx.locale, "dice_results"),
             value="\n".join(
                 [
-                    format_dice_success_result(dice_result, difficulty, ones_cancel)
+                    format_dice_success_result(dice_result, difficulty, ones_cancel, exploding)
                     for dice_result in result.dice_results + result.extra_dice
                 ]
             ),

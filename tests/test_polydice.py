@@ -1,17 +1,31 @@
 import sys
+from unittest.mock import patch
 
 sys.path.append(".")
 
 from app.library.complex_dice_parser import Parser
-from app.library.polydice import *
+from app.library.polydice import (
+    DicePoolExclusionsSuccesses,
+    DicePoolExclusionsSum,
+    DicePoolResultSuccesses,
+    roll_dice_basic,
+    roll_dice_successes,
+    roll_dice_sum,
+    ExplodingBehavior,
+    DicePoolResultSum,
+    roll_pool,
+)
 
-
-def test_roll_dice_basic():
+@patch('random.randint', side_effect=[1, 2, 6])
+def test_roll_dice_basic(_):
     results = roll_dice_basic(number=3, sides=6, dice_modifier=2)
     assert len(results) == 3
-    for result in results:
-        assert 1 <= result.result <= 6
-        assert result.dice_modifier == 2
+    assert results[0].result == 1
+    assert results[0].value == 3
+    assert results[1].result == 2
+    assert results[1].value == 4
+    assert results[2].result == 6
+    assert results[2].value == 8
 
 
 def test_roll_dice_sum():
@@ -22,7 +36,8 @@ def test_roll_dice_sum():
     assert result.sum >= 3 and result.sum <= 20
 
 
-def test_roll_dice_successes():
+@patch('random.randint', side_effect=[1, 2, 6,7,10])
+def test_roll_dice_successes(_):
     result = roll_dice_successes(
         number=5,
         sides=10,
@@ -33,13 +48,14 @@ def test_roll_dice_successes():
         threshold=7,
     )
     assert isinstance(result, DicePoolResultSuccesses)
-    assert result.successes >= 0 and result.successes <= 5
+    assert result.successes == 2
 
 
-def test_roll_dice_successes_with_low_subtraction():
+@patch('random.randint', side_effect=[1,7,10])
+def test_roll_dice_successes_with_low_subtraction(_):
     result = roll_dice_successes(
-        number=10,
-        sides=6,
+        number=3,
+        sides=10,
         high_exploding=ExplodingBehavior.NONE,
         low_subtracion=True,
         dice_modifier=0,
@@ -47,15 +63,45 @@ def test_roll_dice_successes_with_low_subtraction():
         threshold=7,
     )
     assert isinstance(result, DicePoolResultSuccesses)
-    assert result.successes >= -10 and result.successes <= 10
+    assert result.successes == 1
 
 
-def test_roll_dice_exploding_once():
-    original_dice, extra_dice = roll_pool(
-        number=3, sides=6, dice_modifier=0, high_exploding=ExplodingBehavior.ONCE
+@patch('random.randint', side_effect=[1,7,10,7])
+def test_roll_dice_successes_with_low_subtraction_and_exploding_once(_):
+    result = roll_dice_successes(
+        number=3,
+        sides=10,
+        high_exploding=ExplodingBehavior.ONCE,
+        low_subtracion=True,
+        dice_modifier=0,
+        pool_modifier=0,
+        threshold=7,
     )
-    assert len(original_dice) >= 3
-    assert len(extra_dice) >= 0
+    assert isinstance(result, DicePoolResultSuccesses)
+    assert result.successes == 2
+
+@patch('random.randint', side_effect=[1,7,10,2])
+def test_roll_dice_successes_with_low_subtraction_and_exploding_plus(_):
+    result = roll_dice_successes(
+        number=3,
+        sides=10,
+        high_exploding=ExplodingBehavior.PLUSSUCCESS,
+        low_subtracion=True,
+        dice_modifier=0,
+        pool_modifier=0,
+        threshold=7,
+    )
+    assert isinstance(result, DicePoolResultSuccesses)
+    assert result.successes == 2
+
+
+@patch('random.randint', side_effect=[1,7,10,4])
+def test_roll_dice_exploding_once(_):
+    original_dice, extra_dice = roll_pool(
+        number=3, sides=10, dice_modifier=0, high_exploding=ExplodingBehavior.ONCE
+    )
+    assert len(original_dice) == 3
+    assert len(extra_dice) ==1
 
 
 def test_roll_dice_exploding_cascading():
