@@ -786,5 +786,13 @@
     "willpower_spent_footer": {
         "de": "Willenskraft ausgegeben +1 Erfolg eingerechnet",
         "en": "Willpower spent +1 success included"
+    },
+    "could_not_find_ww_repeat_ctxcustom_id": {
+        "de": "Konnte WW-Wiederholung {ctxcustom_id} nicht finden",
+        "en": "Could not find WW repeat {ctxcustom_id}"
+    },
+    "roll_again": {
+        "de": "Wurf wiederholen",
+        "en": "Roll Again"
     }
 }

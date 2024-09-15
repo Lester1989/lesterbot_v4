@@ -29,7 +29,8 @@ from app.library.polydice import (
 )
 from app.library.werewolf_gifts import Gift, load_gifts, parse_json
 
-regex_pattern = re.compile(r"show_gift_(.*)")
+regex_pattern_gifts = re.compile(r"show_gift_(.*)")
+regex_pattern_ww_repeat = re.compile(r"ww_repeat_(.*)")
 
 
 class WerewolfW20(Extension):
@@ -134,7 +135,38 @@ class WerewolfW20(Extension):
             embed.set_footer(
                 text=localizer.translate(ctx.locale, "willpower_spent_footer")
             )
-        await ctx.send(embed=embed)
+        components = spread_to_rows(
+            Button(
+                label=localizer.translate(ctx.locale, "roll_again"),
+                style=ButtonStyle.PRIMARY,
+                custom_id=f"ww_repeat_{number}_{difficulty}_{ones_cancel}_{specialty}_{spent_willpower}",
+            )
+        )
+        await ctx.send(embed=embed,components=components)
+
+    @component_callback(regex_pattern_ww_repeat)
+    async def ww_repeat(self, ctx: ComponentContext):
+        """Rolls a number of dice and counts the number of successes."""
+        if match := regex_pattern_ww_repeat.match(ctx.custom_id):
+            number, difficulty, ones_cancel, specialty, spent_willpower = map(
+                int, match.groups()
+            )
+            await self.ww(
+                ctx,
+                number=number,
+                difficulty=difficulty,
+                ones_cancel=bool(ones_cancel),
+                specialty=bool(specialty),
+                spent_willpower=bool(spent_willpower),
+            )
+        else:
+            await ctx.send(
+                localizer.translate(
+                    ctx.locale,
+                    "could_not_find_ww_repeat_ctxcustom_id",
+                    ctxcustom_id=ctx.custom_id,
+                )
+            )
 
     @slash_command(
         name="show_gift",
@@ -350,10 +382,10 @@ class WerewolfW20(Extension):
                 )
             )
 
-    @component_callback(regex_pattern)
+    @component_callback(regex_pattern_gifts)
     async def show_gift_callback(self, ctx: ComponentContext):
         """Show gift description."""
-        if match := regex_pattern.match(ctx.custom_id):
+        if match := regex_pattern_gifts.match(ctx.custom_id):
             gift_name = match.group(1)
             await self.display_gift(ctx, gift_name)
         else:
