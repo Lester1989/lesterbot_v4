@@ -149,8 +149,8 @@ class WerewolfW20(Extension):
         """Rolls a number of dice and counts the number of successes."""
         if match := regex_pattern_ww_repeat.match(ctx.custom_id):
             print(match.groups())
-            print(str(match.groups()).split("_"))
-            number, difficulty, ones_cancel, specialty, spent_willpower = str(match.groups()).split("_")
+            print(str(match.groups()[0]).split("_"))
+            number, difficulty, ones_cancel, specialty, spent_willpower = str(match.groups()[0]).split("_")
             await self.ww(
                 ctx,
                 number=int(number),
