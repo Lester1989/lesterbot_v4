@@ -382,7 +382,7 @@ def roll_pool(number: int, sides: int, high_exploding: ExplodingBehavior, dice_m
     """
     original_dice = roll_dice_basic(number=number, sides=sides, dice_modifier=dice_modifier)
     extra_dice = []
-    if high_exploding != ExplodingBehavior.NONE:
+    if high_exploding not in {ExplodingBehavior.NONE, ExplodingBehavior.PLUSSUCCESS}:
         exploding_count = len([dice for dice in original_dice if dice.is_max])
         extra_dice = roll_dice_basic(
             number=exploding_count, sides=sides, dice_modifier=dice_modifier
