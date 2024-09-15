@@ -91,7 +91,7 @@ class WerewolfW20(Extension):
     ):
         return await self.roll_ww(ctx,number,difficulty,ones_cancel,specialty,spent_willpower)
 
-    async def roll_ww(self, ctx, number: int, difficulty: int, ones_cancel: bool, specialty: bool, spent_willpower: bool):
+    async def roll_ww(self, ctx:SlashContext, number: int, difficulty: int, ones_cancel: bool, specialty: bool, spent_willpower: bool):
         """Rolls a number of dice and counts the number of successes."""
         exploding = ExplodingBehavior.PLUSSUCCESS if specialty else ExplodingBehavior.NONE
         result = roll_dice_successes(
@@ -158,9 +158,9 @@ class WerewolfW20(Extension):
                 ctx,
                 number=int(number),
                 difficulty=int(difficulty),
-                ones_cancel=bool(ones_cancel),
-                specialty=bool(specialty),
-                spent_willpower=bool(spent_willpower),
+                ones_cancel=ones_cancel=="True",
+                specialty=specialty=="True",
+                spent_willpower=spent_willpower=="True",
             )
         else:
             await ctx.send(
