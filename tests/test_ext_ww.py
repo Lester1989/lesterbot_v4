@@ -34,6 +34,8 @@ class TestCommands(unittest.IsolatedAsyncioTestCase):
             "test_ctx_locale": "de",
             "test_ctx_guild": self.fake_guild,
             "test_ctx_channel": self.fake_guild.channels[0],
+            'test_ctx_author':self.fake_guild.members[0],
+            'test_ctx_author_id':self.fake_guild.members[0].id,
         }
         return await super().asyncSetUp()
 

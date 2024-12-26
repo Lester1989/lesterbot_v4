@@ -155,6 +155,10 @@ class FakeMember(Member):
     @property
     def roles(self) -> typing.List["Role"]:
         return self.fake_roles
+    
+    @property
+    def mention(self) -> str:
+        return f"<@blabla{self.id}>"
 
     def __init__(self, *args, **kwargs):
         self.fake_roles = kwargs.pop("fake_roles", [])
