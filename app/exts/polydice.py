@@ -158,7 +158,7 @@ class PolyDice(Extension):
             embed.add_field(
                 name=localizer.translate(ctx.locale, "gekaufte_erfolge"), value=str(pool_modifier)
             )
-        await ctx.send(embed=embed)
+        await ctx.send(f'{ctx.author.mention} {localizer.translate(ctx.locale,"rolled")}',embed=embed)
 
     @slash_command(
         name="roll_sum", description=LocalisedDesc(**localizer.translations("roll_sum_description"))
@@ -251,4 +251,4 @@ class PolyDice(Extension):
             embed.add_field(
                 name=localizer.translate(ctx.locale, "bonuswert"), value=str(pool_modifier)
             )
-        await ctx.send(embed=embed)
+        await ctx.send(f'{ctx.author.mention} {localizer.translate(ctx.locale,"rolled")}',embed=embed)

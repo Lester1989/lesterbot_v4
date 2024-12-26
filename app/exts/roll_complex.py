@@ -112,7 +112,7 @@ Rolls three 20-sided dice and counts the value if it is below 14 / 12 / 13. Says
             ),
         )
         for embed in result_embeds:
-            await ctx.send(embed=embed, components=action_rows)
+            await ctx.send(f'{ctx.author.mention} {localizer.translate(ctx.locale,"rolled")}',embed=embed, components=action_rows)
 
     @slash_command(
         name="save_roll",

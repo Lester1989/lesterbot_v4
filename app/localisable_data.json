@@ -794,5 +794,9 @@
     "roll_again": {
         "de": "Wurf wiederholen",
         "en": "Roll Again"
+    },
+    "rolled": {
+        "de": "hat gewürfelt",
+        "en": "rolled"
     }
 }

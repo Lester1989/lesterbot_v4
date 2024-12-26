@@ -145,14 +145,12 @@ class WerewolfW20(Extension):
                 custom_id=f"ww_repeat_{number}_{difficulty}_{ones_cancel}_{specialty}_{spent_willpower}",
             )
         )
-        await ctx.send(embed=embed,components=components)
+        await ctx.send(f"{ctx.author.mention} {localizer.translate(ctx.locale, "rolled")}",embed=embed,components=components)
 
     @component_callback(regex_pattern_ww_repeat)
     async def ww_repeat(self, ctx: ComponentContext):
         """Rolls a number of dice and counts the number of successes."""
         if match := regex_pattern_ww_repeat.match(ctx.custom_id):
-            print(match.groups())
-            print(str(match.groups()[0]).split("_"))
             number, difficulty, ones_cancel, specialty, spent_willpower = str(match.groups()[0]).split("_")
             await self.roll_ww(
                 ctx,
