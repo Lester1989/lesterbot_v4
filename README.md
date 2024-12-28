@@ -16,6 +16,8 @@ It can be hosted in a docker container for easiest deployment
 * [x] Create random NPC (for roleplay, without stats but with motivations and fears)
 * [x] gift lookup for Werewolf:20th Edition. (Needs Upload of JSON formatted Gifts, not included in REPO due to copyright)
 * [x] localisation for different languages
+* [x] x-card
+* [ ] safety tools (questioneer and summary)
 
 ## Test Coverage  Report
 

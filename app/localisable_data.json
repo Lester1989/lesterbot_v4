@@ -798,5 +798,9 @@
     "rolled": {
         "de": "hat gewürfelt",
         "en": "rolled"
+    },
+    "x_card_quick":{
+        "de": "X-Card",
+        "en": "X-Card"
     }
 }

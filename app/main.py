@@ -118,5 +118,6 @@ if __name__ == "__main__":
     bot.load_extension("exts.roll_complex")
     bot.load_extension("exts.charsheetmanager")
     bot.load_extension("exts.initiative")
+    bot.load_extension("exts.xcard")
     print("Loaded extensions")
     bot.start(os.environ.get("DISCORDTOKEN"))
